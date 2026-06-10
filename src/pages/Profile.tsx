@@ -1,319 +1,329 @@
 import { useState } from 'react'
-import { Star, Check, ChevronRight, User, Settings, Bell, HelpCircle, LogOut, CreditCard, Gift, Ticket } from 'lucide-react'
+import { ChevronRight, Bell, Settings, HelpCircle, LogOut, CreditCard, Check, ArrowLeft } from 'lucide-react'
 import TopBar from '../components/TopBar'
 import { membershipPlans } from '../data'
 
 type View = 'main' | 'join' | 'checkout'
 
 export default function Profile() {
-  const [view, setView] = useState<View>('main')
-  const [isMember, setIsMember] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState('monthly')
+  const [view, setView]       = useState<View>('main')
+  const [isMember, setMember] = useState(false)
+  const [plan, setPlan]       = useState('monthly')
 
-  if (view === 'join') {
-    return <MembershipJoin
-      selected={selectedPlan}
-      onSelect={setSelectedPlan}
-      onContinue={() => setView('checkout')}
-      onBack={() => setView('main')}
-    />
-  }
-  if (view === 'checkout') {
-    return <Checkout
-      plan={membershipPlans.find(p => p.id === selectedPlan)!}
-      onSuccess={() => { setIsMember(true); setView('main') }}
-      onBack={() => setView('join')}
-    />
-  }
+  if (view === 'join')     return <JoinScreen selected={plan} onSelect={setPlan} onContinue={() => setView('checkout')} onBack={() => setView('main')} />
+  if (view === 'checkout') return <CheckoutScreen plan={membershipPlans.find(p => p.id === plan)!} onSuccess={() => { setMember(true); setView('main') }} onBack={() => setView('join')} />
 
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <TopBar title="Profile" />
-      <div className="scroll-area flex-1 px-4 pt-4 pb-6">
+      <div className="scroll-area flex-1" style={{ padding: '16px 16px 28px' }}>
 
-        {/* User card */}
-        <div
-          className="rounded-2xl p-4 flex items-center gap-4 mb-5"
-          style={{ background: '#112248' }}
-        >
-          <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #162d60, #1c3a7a)' }}>
-            <User size={28} style={{ color: 'rgba(255,255,255,0.7)' }} />
+        {/* Avatar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+          <div style={{
+            width: 58, height: 58, borderRadius: 16, flexShrink: 0,
+            background: '#112248', border: '2px solid rgba(255,255,255,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, fontWeight: 800, color: '#d4a726',
+          }}>
+            TF
           </div>
-          <div className="flex-1">
-            <p style={{ fontSize: 17, fontWeight: 800 }}>Tenerife Fan</p>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>fan@cdtenerife.com</p>
+          <div>
+            <p style={{ margin: '0 0 2px', fontSize: 17, fontWeight: 700 }}>Tenerife Fan</p>
+            <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>fan@cdtenerife.com</p>
             {isMember && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <Star size={12} fill="#f5cc50" style={{ color: '#f5cc50' }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#f5cc50' }}>Blue Member</span>
-              </div>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#d4a726' }}>Blue Member</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <circle cx="6" cy="6" r="6" fill="#d4a726"/>
+                  <path d="M3.5 6l2 2 3-3" stroke="#060f22" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
             )}
           </div>
         </div>
 
-        {/* Membership CTA / badge */}
+        {/* Membership card */}
         {!isMember ? (
           <button
             onClick={() => setView('join')}
-            className="w-full rounded-2xl p-5 mb-5 text-left active:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #162d60 0%, #1c3a7a 100%)', border: '1px solid rgba(245,204,80,0.3)' }}
+            style={{
+              display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
+              padding: '18px 18px', borderRadius: 14, marginBottom: 20,
+              background: '#0c1b3a', border: '1px solid rgba(212,167,38,0.3)',
+            }}
           >
-            <div className="flex items-center gap-3 mb-3">
-              <Star size={24} style={{ color: '#f5cc50' }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
               <div>
-                <p style={{ fontSize: 16, fontWeight: 800 }}>Become a Blue Member</p>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>From just $5/month</p>
+                <p style={{ margin: '0 0 3px', fontSize: 17, fontWeight: 700 }}>Become a Member</p>
+                <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>Unlock the full experience</p>
               </div>
+              <span style={{ fontSize: 22, fontWeight: 900, color: '#d4a726' }}>$5</span>
             </div>
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
               {['Live streaming', 'Store discounts', 'Priority tickets', 'Exclusive content'].map(f => (
-                <div key={f} className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-xs" style={{ background: '#1a7a3c' }}>✓</span>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{f}</span>
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <div style={{ width: 16, height: 16, borderRadius: 5, background: '#1a4026', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                      <path d="M1 3l2 2 4-4" stroke="#4caf50" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{f}</span>
                 </div>
               ))}
             </div>
-            <div className="btn-gold inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl">
-              Join Now
-              <ChevronRight size={16} />
+            <div style={{ background: '#d4a726', borderRadius: 8, padding: '10px 16px', textAlign: 'center' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#060f22' }}>Join for $5 / month</span>
             </div>
           </button>
         ) : (
-          <div
-            className="rounded-2xl p-4 mb-5"
-            style={{ background: 'linear-gradient(135deg, #1a5c30, #267a43)', border: '1px solid rgba(245,204,80,0.2)' }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(245,204,80,0.15)' }}>
-                <Star size={20} fill="#f5cc50" style={{ color: '#f5cc50' }} />
-              </div>
-              <div>
-                <p style={{ fontSize: 15, fontWeight: 700 }}>Active Blue Membership</p>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>Renews Jul 10, 2026 · $5.00</p>
-              </div>
+          <div style={{
+            padding: '14px 16px', borderRadius: 12, marginBottom: 20,
+            background: 'rgba(26,122,60,0.15)', border: '1px solid rgba(76,175,80,0.25)',
+            display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#1a4026', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="8" stroke="#4caf50" strokeWidth="1.5"/>
+                <path d="M5.5 9l2.5 2.5 4-4.5" stroke="#4caf50" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 700 }}>Blue Membership · Active</p>
+              <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>Renews Jul 10, 2026 · $5.00/mo</p>
             </div>
           </div>
         )}
 
-        {/* Quick stats */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
           {[
-            { label: 'Matches watched', value: isMember ? '12' : '—', icon: Ticket },
-            { label: 'Orders', value: '3', icon: CreditCard },
-            { label: 'Rewards', value: isMember ? '250 pts' : '—', icon: Gift },
-          ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="rounded-xl p-3 flex flex-col items-center text-center gap-1" style={{ background: '#112248' }}>
-              <Icon size={18} style={{ color: '#f5cc50' }} />
-              <span style={{ fontSize: 16, fontWeight: 800 }}>{value}</span>
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', lineHeight: 1.3 }}>{label}</span>
+            { label: 'Matches watched', value: isMember ? '12' : '—' },
+            { label: 'Orders placed', value: '3' },
+            { label: 'Points earned', value: isMember ? '250' : '—' },
+          ].map(s => (
+            <div key={s.label} style={{ background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+              <p style={{ margin: '0 0 3px', fontSize: 20, fontWeight: 800 }}>{s.value}</p>
+              <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.4)', lineHeight: 1.35 }}>{s.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Menu items */}
-        <div className="rounded-2xl overflow-hidden mb-4" style={{ background: '#112248' }}>
+        {/* Settings list */}
+        <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 12 }}>
           {[
-            { icon: Star, label: 'Membership', sub: isMember ? 'Blue Member · Active' : 'Not a member', action: () => !isMember && setView('join') },
-            { icon: Bell, label: 'Notifications', sub: 'Push notifications on' },
-            { icon: Settings, label: 'Account Settings', sub: 'Language, privacy' },
-            { icon: HelpCircle, label: 'Help & Support', sub: 'FAQs and contact' },
+            { icon: CreditCard, label: 'Membership & Billing', sub: isMember ? 'Blue Member · Active' : 'Not a member', action: () => !isMember && setView('join') },
+            { icon: Bell,       label: 'Notifications',        sub: 'Push notifications on' },
+            { icon: Settings,   label: 'Account Settings',     sub: 'Language, privacy, security' },
+            { icon: HelpCircle, label: 'Help & Support',       sub: 'FAQs and contact us' },
           ].map(({ icon: Icon, label, sub, action }, i, arr) => (
             <button
               key={label}
               onClick={action}
-              className="w-full flex items-center gap-4 px-4 py-3.5 active:opacity-70 text-left"
-              style={{ borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '14px 16px', width: '100%',
+                background: '#0c1b3a', border: 'none', cursor: 'pointer', textAlign: 'left',
+                borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+              }}
             >
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#162d60' }}>
-                <Icon size={18} style={{ color: '#f5cc50' }} />
+              <div style={{ width: 36, height: 36, borderRadius: 9, background: '#112248', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
               </div>
-              <div className="flex-1">
-                <p style={{ fontSize: 14, fontWeight: 600 }}>{label}</p>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{sub}</p>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 600, color: '#fff' }}>{label}</p>
+                <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{sub}</p>
               </div>
-              <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.3)' }} />
+              <ChevronRight size={15} style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
             </button>
           ))}
         </div>
 
-        <button
-          className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl active:opacity-70"
-          style={{ background: '#112248' }}
-        >
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(192,57,43,0.2)' }}>
-            <LogOut size={18} style={{ color: '#e74c3c' }} />
+        <button style={{
+          display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', width: '100%',
+          background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+          cursor: 'pointer',
+        }}>
+          <div style={{ width: 36, height: 36, borderRadius: 9, background: 'rgba(192,57,43,0.15)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <LogOut size={16} style={{ color: '#e74c3c' }} />
           </div>
           <span style={{ fontSize: 14, fontWeight: 600, color: '#e74c3c' }}>Sign Out</span>
         </button>
+
       </div>
     </div>
   )
 }
 
-function MembershipJoin({ selected, onSelect, onContinue }: {
+/* ── Join screen ─────────────────────────────────────────────── */
+function JoinScreen({ selected, onSelect, onContinue, onBack }: {
   selected: string; onSelect: (id: string) => void; onContinue: () => void; onBack: () => void
 }) {
   return (
-    <div className="flex flex-col h-full">
-      <TopBar title="Choose Plan" showBack />
-      <div className="scroll-area flex-1 px-4 pt-4 pb-6">
-        <div className="text-center mb-6">
-          <Star size={36} fill="#f5cc50" style={{ color: '#f5cc50', margin: '0 auto 12px' }} />
-          <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>Join CD Tenerife</h2>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
-            Unlock exclusive content, live streaming, and more
-          </p>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        className="safe-top shrink-0"
+        style={{ background: '#060f22', padding: '0 16px 14px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+      >
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+          <ArrowLeft size={18} />
+        </button>
+        <span style={{ fontSize: 16, fontWeight: 700 }}>Choose a plan</span>
+      </div>
 
-        <div className="flex flex-col gap-4 mb-6">
-          {membershipPlans.map(plan => (
+      <div className="scroll-area flex-1" style={{ padding: '24px 16px 20px' }}>
+        <p style={{ margin: '0 0 24px', fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
+          Join CD Tenerife and unlock live streaming, store discounts, and exclusive behind-the-scenes access.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+          {membershipPlans.map(p => (
             <button
-              key={plan.id}
-              onClick={() => onSelect(plan.id)}
-              className="w-full rounded-2xl p-5 text-left transition-all active:scale-98"
+              key={p.id}
+              onClick={() => onSelect(p.id)}
               style={{
-                background: selected === plan.id ? 'linear-gradient(135deg, #162d60, #1c3a7a)' : '#112248',
-                border: `2px solid ${selected === plan.id ? '#f5cc50' : 'transparent'}`,
+                display: 'block', width: '100%', textAlign: 'left', cursor: 'pointer',
+                padding: '18px 18px', borderRadius: 14,
+                background: '#0c1b3a',
+                border: selected === p.id ? '2px solid #d4a726' : '1px solid rgba(255,255,255,0.1)',
+                transition: 'border-color 0.15s',
               }}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div>
-                  <p style={{ fontSize: 17, fontWeight: 800 }}>{plan.name}</p>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-gold-gradient" style={{ fontSize: 28, fontWeight: 900 }}>${plan.price}</span>
-                    <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>/ {plan.period}</span>
+                  <p style={{ margin: '0 0 3px', fontSize: 16, fontWeight: 700 }}>{p.name}</p>
+                  {p.id === 'annual' && (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#d4a726', background: 'rgba(212,167,38,0.12)', borderRadius: 4, padding: '2px 7px' }}>
+                      Save 18%
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                  <div>
+                    <span style={{ fontSize: 26, fontWeight: 800, color: '#d4a726' }}>${p.price}</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>/{p.period}</span>
+                  </div>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 3,
+                    background: selected === p.id ? '#d4a726' : 'transparent',
+                    border: `2px solid ${selected === p.id ? '#d4a726' : 'rgba(255,255,255,0.2)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background 0.15s',
+                  }}>
+                    {selected === p.id && <Check size={12} style={{ color: '#060f22' }} strokeWidth={3} />}
                   </div>
                 </div>
-                <div
-                  className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-1"
-                  style={{ background: selected === plan.id ? '#f5cc50' : '#162d60', border: `2px solid ${selected === plan.id ? '#f5cc50' : 'rgba(255,255,255,0.2)'}` }}
-                >
-                  {selected === plan.id && <Check size={14} style={{ color: '#0c1b3a' }} strokeWidth={3} />}
-                </div>
               </div>
-              <ul className="flex flex-col gap-2">
-                {plan.features.map(f => (
-                  <li key={f} className="flex items-center gap-2.5">
-                    <span className="w-4 h-4 rounded-full flex items-center justify-center text-xs shrink-0" style={{ background: '#1a7a3c' }}>✓</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)' }}>{f}</span>
-                  </li>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {p.features.map(f => (
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 16, height: 16, borderRadius: 5, background: '#1a4026', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                        <path d="M1 3l2 2 4-4" stroke="#4caf50" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{f}</span>
+                  </div>
                 ))}
-              </ul>
-              {plan.id === 'annual' && (
-                <div className="mt-3 px-3 py-1.5 rounded-full inline-block" style={{ background: 'rgba(245,204,80,0.15)', border: '1px solid rgba(245,204,80,0.3)' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#f5cc50' }}>Save 18% vs monthly</span>
-                </div>
-              )}
+              </div>
             </button>
           ))}
         </div>
 
-        <button className="btn-gold w-full py-4 font-bold text-base" onClick={onContinue}>
-          Continue to Payment
+        <button className="btn btn-primary" style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15 }} onClick={onContinue}>
+          Continue to payment
         </button>
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textAlign: 'center', marginTop: 12 }}>
-          Cancel anytime. No hidden fees.
+        <p style={{ margin: '12px 0 0', textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>
+          Cancel anytime · No hidden fees
         </p>
       </div>
     </div>
   )
 }
 
-function Checkout({ plan, onSuccess }: { plan: typeof membershipPlans[0]; onSuccess: () => void; onBack: () => void }) {
+/* ── Checkout ────────────────────────────────────────────────── */
+function CheckoutScreen({ plan, onSuccess, onBack }: { plan: typeof membershipPlans[0]; onSuccess: () => void; onBack: () => void }) {
   const [loading, setLoading] = useState(false)
 
   const handlePay = () => {
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      onSuccess()
-    }, 1800)
+    setTimeout(() => { setLoading(false); onSuccess() }, 1800)
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <TopBar title="Payment" showBack />
-      <div className="scroll-area flex-1 px-4 pt-4 pb-6">
-        {/* Order summary */}
-        <div className="rounded-2xl p-4 mb-5" style={{ background: '#112248' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Order Summary</p>
-          <div className="flex justify-between items-center mb-2">
-            <span style={{ fontSize: 15 }}>{plan.name}</span>
-            <span style={{ fontSize: 15, fontWeight: 700 }}>${plan.price}/{plan.period}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        className="safe-top shrink-0"
+        style={{ background: '#060f22', padding: '0 16px 14px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+      >
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+          <ArrowLeft size={18} />
+        </button>
+        <span style={{ fontSize: 16, fontWeight: 700 }}>Payment</span>
+      </div>
+
+      <div className="scroll-area flex-1" style={{ padding: '20px 16px 0' }}>
+        {/* Summary */}
+        <div style={{ background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
+          <p style={{ margin: '0 0 12px', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Order summary</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ fontSize: 14 }}>{plan.name}</span>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>${plan.price}/{plan.period}</span>
           </div>
-          <div className="flex justify-between items-center pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 10, marginTop: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 14, fontWeight: 700 }}>Total today</span>
-            <span className="text-gold-gradient" style={{ fontSize: 20, fontWeight: 900 }}>${plan.price}</span>
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#d4a726' }}>${plan.price}</span>
           </div>
         </div>
 
-        {/* Payment form */}
-        <div className="rounded-2xl p-4 mb-5" style={{ background: '#112248' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Card Details</p>
-          <div className="flex flex-col gap-3">
+        {/* Card fields */}
+        <div style={{ background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
+          <p style={{ margin: '0 0 16px', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Card details</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>Card number</label>
-              <input
-                type="text"
-                placeholder="•••• •••• •••• ••••"
-                className="w-full px-4 py-3 rounded-xl outline-none"
-                style={{ background: '#162d60', fontSize: 15, color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
-              />
+              <label style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 7 }}>Card number</label>
+              <input className="input" type="text" placeholder="1234 5678 9012 3456" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
-                <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>Expiry</label>
-                <input
-                  type="text"
-                  placeholder="MM / YY"
-                  className="w-full px-4 py-3 rounded-xl outline-none"
-                  style={{ background: '#162d60', fontSize: 15, color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
-                />
+                <label style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 7 }}>Expiry</label>
+                <input className="input" type="text" placeholder="MM / YY" />
               </div>
               <div>
-                <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>CVC</label>
-                <input
-                  type="text"
-                  placeholder="•••"
-                  className="w-full px-4 py-3 rounded-xl outline-none"
-                  style={{ background: '#162d60', fontSize: 15, color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
-                />
+                <label style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 7 }}>CVC</label>
+                <input className="input" type="text" placeholder="•••" />
               </div>
             </div>
             <div>
-              <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: 6 }}>Name on card</label>
-              <input
-                type="text"
-                placeholder="Full name"
-                className="w-full px-4 py-3 rounded-xl outline-none"
-                style={{ background: '#162d60', fontSize: 15, color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}
-              />
+              <label style={{ display: 'block', fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 7 }}>Name on card</label>
+              <input className="input" type="text" placeholder="Full name" />
             </div>
           </div>
         </div>
+      </div>
 
+      <div style={{ padding: '14px 16px 32px', background: '#060f22', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
         <button
-          className="btn-gold w-full py-4 font-bold text-base flex items-center justify-center gap-2"
           onClick={handlePay}
           disabled={loading}
-          style={{ opacity: loading ? 0.8 : 1 }}
+          className="btn btn-primary"
+          style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, opacity: loading ? 0.75 : 1 }}
         >
           {loading ? (
             <>
-              <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <span className="spin" style={{ width: 16, height: 16, border: '2px solid #060f22', borderTopColor: 'transparent', borderRadius: '50%', display: 'inline-block' }} />
               Processing…
             </>
           ) : (
-            <>
-              <CreditCard size={18} />
-              Pay ${plan.price} · Start Membership
-            </>
+            <><CreditCard size={16} /> Pay ${plan.price} · Start membership</>
           )}
         </button>
-
-        <div className="flex items-center justify-center gap-2 mt-4" style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
-          <span>🔒</span>
-          Secured with 256-bit SSL encryption
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+          <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
+            <rect x="1" y="6" width="10" height="7" rx="2" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2"/>
+            <path d="M3.5 6V4a2.5 2.5 0 015 0v2" stroke="rgba(255,255,255,0.3)" strokeWidth="1.2" strokeLinecap="round"/>
+          </svg>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>Secured with 256-bit SSL</span>
         </div>
       </div>
     </div>

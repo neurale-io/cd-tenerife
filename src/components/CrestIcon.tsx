@@ -1,28 +1,30 @@
 interface Props { size?: number }
 
 export default function CrestIcon({ size = 40 }: Props) {
+  const s = size
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 110"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Shield shape */}
+    <svg width={s} height={s} viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Shield */}
       <path
-        d="M50 5 L90 20 L90 60 Q90 90 50 105 Q10 90 10 60 L10 20 Z"
-        fill="#112248"
-        stroke="#c9880a"
-        strokeWidth="3"
+        d="M32 2L60 13V42C60 57 32 70 32 70C32 70 4 57 4 42V13L32 2Z"
+        fill="#0c1b3a"
+        stroke="#d4a726"
+        strokeWidth="2"
       />
-      {/* Gold diagonal bands */}
-      <path d="M50 5 L90 20 L90 35 L10 75 L10 60 L50 5Z" fill="#c9880a" opacity="0.9" />
-      {/* Cross white */}
-      <rect x="43" y="15" width="14" height="65" rx="2" fill="white" opacity="0.9" />
-      <rect x="15" y="42" width="70" height="14" rx="2" fill="white" opacity="0.9" />
-      {/* Center crest letters */}
-      <text x="50" y="58" textAnchor="middle" fill="#0c1b3a" fontSize="14" fontWeight="900" fontFamily="Inter,sans-serif">CDT</text>
+      {/* White horizontal band */}
+      <path d="M4 22H60V34H4Z" fill="white" opacity="0.9"/>
+      {/* Gold diagonal stripe */}
+      <path d="M32 2L60 13V22H42L4 44V34L22 22H4V13L32 2Z" fill="#d4a726"/>
+      {/* Center initials */}
+      <text
+        x="32" y="52"
+        textAnchor="middle"
+        fill="white"
+        fontSize="12"
+        fontWeight="800"
+        fontFamily="Inter,system-ui,sans-serif"
+        letterSpacing="1"
+      >CDT</text>
     </svg>
   )
 }
