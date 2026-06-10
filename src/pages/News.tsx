@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Clock } from 'lucide-react'
+import { Clock, ArrowLeft } from 'lucide-react'
 import TopBar from '../components/TopBar'
 import { newsArticles } from '../data'
 import type { NewsArticle } from '../types'
@@ -8,8 +8,8 @@ const TABS = ['Latest', 'Club', 'First Team'] as const
 type Tab = typeof TABS[number]
 
 const tabToCategory: Record<Tab, string> = {
-  Latest: 'latest',
-  Club: 'club',
+  'Latest':     'latest',
+  'Club':       'club',
   'First Team': 'first-team',
 }
 
@@ -17,29 +17,41 @@ export default function News() {
   const [active, setActive] = useState<Tab>('Latest')
   const [selected, setSelected] = useState<NewsArticle | null>(null)
 
-  const filtered = newsArticles.filter(a =>
-    active === 'Latest' ? true : a.category === tabToCategory[active]
-  )
-
   if (selected) {
     return <ArticleDetail article={selected} onBack={() => setSelected(null)} />
   }
 
+  const filtered = active === 'Latest'
+    ? newsArticles
+    : newsArticles.filter(a => a.category === tabToCategory[active])
+
+  const hero = active === 'Latest' ? filtered[0] : null
+  const list = hero ? filtered.slice(1) : filtered
+
   return (
-    <div className="flex flex-col h-full">
-      <TopBar title="News" showBack={false} />
-      {/* Tabs */}
-      <div className="shrink-0 flex px-4 gap-1 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#060f22' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <TopBar title="News" />
+
+      {/* Tab bar */}
+      <div style={{
+        display: 'flex', gap: 6, padding: '0 16px 12px',
+        background: '#060f22', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        flexShrink: 0,
+      }}>
         {TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setActive(tab)}
-            className="px-4 py-2 rounded-full transition-all"
             style={{
+              padding: '7px 16px',
+              borderRadius: 8,
+              border: 'none',
+              cursor: 'pointer',
               fontSize: 13,
               fontWeight: active === tab ? 700 : 500,
-              background: active === tab ? 'linear-gradient(135deg, #f5cc50, #c9880a)' : 'transparent',
-              color: active === tab ? '#0c1b3a' : 'rgba(255,255,255,0.55)',
+              background: active === tab ? '#d4a726' : 'transparent',
+              color:      active === tab ? '#060f22' : 'rgba(255,255,255,0.5)',
+              transition: 'background 0.15s, color 0.15s',
             }}
           >
             {tab}
@@ -47,54 +59,68 @@ export default function News() {
         ))}
       </div>
 
-      <div className="scroll-area flex-1 px-4 pt-4 pb-4">
-        {/* Featured */}
-        {active === 'Latest' && filtered[0] && (
+      <div className="scroll-area flex-1" style={{ padding: '16px 16px 20px' }}>
+
+        {/* Hero article */}
+        {hero && (
           <button
-            onClick={() => setSelected(filtered[0])}
-            className="w-full rounded-2xl overflow-hidden relative mb-4 text-left active:opacity-90"
-            style={{ height: 220 }}
+            onClick={() => setSelected(hero)}
+            style={{
+              display: 'block', width: '100%', position: 'relative',
+              height: 220, borderRadius: 12, overflow: 'hidden',
+              marginBottom: 16, border: 'none', cursor: 'pointer', padding: 0,
+            }}
           >
-            <img src={filtered[0].image} alt={filtered[0].title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(6,15,34,0.97) 0%, transparent 50%)' }} />
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-              <CategoryBadge category={filtered[0].category} />
-              <p style={{ fontSize: 17, fontWeight: 800, lineHeight: 1.3, marginTop: 6 }}>{filtered[0].title}</p>
-              <div className="flex items-center gap-3 mt-2">
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{filtered[0].date}</span>
-                <span className="flex items-center gap-1" style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
-                  <Clock size={11} />
-                  {filtered[0].readTime} min
-                </span>
-              </div>
+            <img src={hero.image} alt={hero.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,15,34,0.96) 0%, transparent 55%)' }} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 16, textAlign: 'left' }}>
+              <CategoryBadge category={hero.category} />
+              <p style={{ margin: '8px 0 6px', fontSize: 16, fontWeight: 700, lineHeight: 1.3, color: '#fff' }}>
+                {hero.title}
+              </p>
+              <span className="t-meta" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {hero.date}
+                <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                <Clock size={11} />
+                {hero.readTime} min
+              </span>
             </div>
           </button>
         )}
 
-        {/* List */}
-        <div className="flex flex-col gap-3 stagger">
-          {(active === 'Latest' ? filtered.slice(1) : filtered).map(article => (
+        {/* Article list */}
+        <div className="stagger" style={{ display: 'flex', flexDirection: 'column' }}>
+          {list.map((article, i) => (
             <button
               key={article.id}
               onClick={() => setSelected(article)}
-              className="flex gap-3 rounded-xl p-3 text-left active:opacity-80"
-              style={{ background: '#112248' }}
+              style={{
+                display: 'flex', gap: 14, alignItems: 'center',
+                padding: '13px 0',
+                background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                borderBottom: i < list.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+              }}
             >
-              <img src={article.image} alt={article.title} className="w-20 h-20 rounded-xl object-cover shrink-0" />
-              <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-                <div>
+              <img
+                src={article.image}
+                alt={article.title}
+                style={{ width: 72, height: 72, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ marginBottom: 6 }}>
                   <CategoryBadge category={article.category} />
-                  <p style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.35, marginTop: 5 }} className="line-clamp-2">
-                    {article.title}
-                  </p>
                 </div>
-                <div className="flex items-center gap-3 mt-2">
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>{article.date}</span>
-                  <span className="flex items-center gap-1" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
-                    <Clock size={10} />
-                    {article.readTime} min
-                  </span>
-                </div>
+                <p style={{
+                  margin: '0 0 6px', fontSize: 14, fontWeight: 600, lineHeight: 1.4, color: '#fff',
+                  overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                }}>
+                  {article.title}
+                </p>
+                <span className="t-meta" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {article.date}
+                  <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                  {article.readTime} min read
+                </span>
               </div>
             </button>
           ))}
@@ -105,53 +131,73 @@ export default function News() {
 }
 
 function CategoryBadge({ category }: { category: string }) {
-  const map: Record<string, { label: string; color: string }> = {
-    latest: { label: 'LATEST', color: '#1c3a7a' },
-    club: { label: 'CLUB', color: '#2d5016' },
-    'first-team': { label: 'FIRST TEAM', color: '#c9880a' },
+  const styles: Record<string, { label: string; bg: string; color: string }> = {
+    latest:       { label: 'Latest',     bg: '#162d60',  color: 'rgba(255,255,255,0.75)' },
+    club:         { label: 'Club',       bg: '#1a4026',  color: 'rgba(255,255,255,0.75)' },
+    'first-team': { label: 'First Team', bg: '#3d2010',  color: '#d4a726' },
   }
-  const cfg = map[category] || map.latest
+  const s = styles[category] ?? styles.latest
   return (
-    <span
-      className="inline-block px-2 py-0.5 rounded-full"
-      style={{ fontSize: 9, fontWeight: 700, background: cfg.color, letterSpacing: '0.06em' }}
-    >
-      {cfg.label}
+    <span style={{
+      display: 'inline-block',
+      padding: '2px 7px',
+      borderRadius: 4,
+      fontSize: 10,
+      fontWeight: 700,
+      letterSpacing: '0.04em',
+      textTransform: 'uppercase',
+      background: s.bg,
+      color: s.color,
+    }}>
+      {s.label}
     </span>
   )
 }
 
 function ArticleDetail({ article, onBack }: { article: NewsArticle; onBack: () => void }) {
   return (
-    <div className="flex flex-col h-full">
-      <div className="relative shrink-0" style={{ height: 260 }}>
-        <img src={article.image} alt={article.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #060f22 0%, transparent 60%)' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Hero image */}
+      <div style={{ position: 'relative', height: 280, flexShrink: 0 }}>
+        <img src={article.image} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #060f22 0%, rgba(6,15,34,0.2) 60%, transparent 100%)' }} />
         <button
           onClick={onBack}
-          className="absolute top-12 left-4 w-9 h-9 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.5)' }}
+          className="safe-top"
+          style={{
+            position: 'absolute', top: 0, left: 16,
+            width: 36, height: 36, borderRadius: 10,
+            background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)',
+            border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff',
+          }}
         >
-          ←
+          <ArrowLeft size={18} />
         </button>
       </div>
-      <div className="scroll-area flex-1 px-4 pb-6" style={{ background: '#060f22' }}>
-        <div className="pt-4">
-          <CategoryBadge category={article.category} />
-          <h1 style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.25, marginTop: 10, marginBottom: 8 }}>{article.title}</h1>
-          <div className="flex items-center gap-3 mb-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{article.date}</span>
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>·</span>
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{article.readTime} min read</span>
-          </div>
-          <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.8)' }}>{article.excerpt}</p>
-          <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.8)', marginTop: 16 }}>
-            The team showed tremendous resilience and quality throughout the match. Supporters at the Estadio Heliodoro Rodríguez López were treated to an exceptional display of attacking football, with the midfield controlling possession for large spells.
-          </p>
-          <p style={{ fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.8)', marginTop: 16 }}>
-            Manager praised the collective effort: "Every single player gave everything tonight. This is what CD Tenerife is about — passion, commitment, and belief. The fans have been incredible and they deserve nights like this."
-          </p>
+
+      <div className="scroll-area flex-1" style={{ background: '#060f22', padding: '20px 20px 32px' }}>
+        <CategoryBadge category={article.category} />
+        <h1 style={{ margin: '12px 0 10px', fontSize: 22, fontWeight: 800, lineHeight: 1.25, letterSpacing: '-0.3px' }}>
+          {article.title}
+        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, paddingBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <span className="t-meta">{article.date}</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.25)' }} />
+          <span className="t-meta" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Clock size={11} /> {article.readTime} min read
+          </span>
         </div>
+        <p style={{ margin: '0 0 18px', fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.78)' }}>
+          {article.excerpt}
+        </p>
+        <p style={{ margin: '0 0 18px', fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.78)' }}>
+          The team showed tremendous resilience and quality throughout the match. Supporters at the Estadio Heliodoro Rodríguez López were treated to an exceptional display of attacking football, with the midfield controlling possession for large spells.
+        </p>
+        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.7, color: 'rgba(255,255,255,0.78)' }}>
+          "Every single player gave everything tonight. This is what CD Tenerife is about — passion, commitment, and belief. The fans have been incredible and they deserve nights like this."
+        </p>
       </div>
     </div>
   )

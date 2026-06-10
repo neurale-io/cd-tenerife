@@ -1,47 +1,58 @@
 import { useState } from 'react'
-import { Play, Lock, Calendar, MapPin, ChevronRight } from 'lucide-react'
+import { Play, Lock, Calendar, MapPin, ChevronRight, X } from 'lucide-react'
 import TopBar from '../components/TopBar'
 import { matches } from '../data'
 import type { Match } from '../types'
 
-export default function Live() {
-  const [activeTab, setActiveTab] = useState<'live' | 'upcoming' | 'results'>('live')
-  const [showPaywall, setShowPaywall] = useState(false)
+type Tab = 'live' | 'upcoming' | 'results'
 
-  const liveMatches = matches.filter(m => m.status === 'live')
-  const upcomingMatches = matches.filter(m => m.status === 'upcoming')
-  const results = matches.filter(m => m.status === 'finished')
+export default function Live() {
+  const [tab, setTab]             = useState<Tab>('live')
+  const [showPaywall, setPaywall] = useState(false)
+
+  const live     = matches.filter(m => m.status === 'live')
+  const upcoming = matches.filter(m => m.status === 'upcoming')
+  const results  = matches.filter(m => m.status === 'finished')
 
   return (
-    <div className="flex flex-col h-full">
-      <TopBar title="Matches & Live" />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <TopBar title="Matches" />
 
       {/* Tabs */}
-      <div className="shrink-0 flex px-4 gap-2 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: '#060f22' }}>
-        {(['live', 'upcoming', 'results'] as const).map(tab => {
-          const labels = { live: 'Live', upcoming: 'Upcoming', results: 'Results' }
-          const isLive = tab === 'live'
+      <div style={{
+        display: 'flex', gap: 6, padding: '0 16px 12px',
+        background: '#060f22', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0,
+      }}>
+        {(['live', 'upcoming', 'results'] as Tab[]).map(t => {
+          const labels: Record<Tab, string> = { live: 'Live', upcoming: 'Upcoming', results: 'Results' }
+          const isActive = tab === t
           return (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="px-4 py-1.5 rounded-full flex items-center gap-1.5 transition-all"
+              key={t}
+              onClick={() => setTab(t)}
               style={{
-                fontSize: 13,
-                fontWeight: activeTab === tab ? 700 : 500,
-                background: activeTab === tab
-                  ? (isLive ? 'rgba(229,57,53,0.9)' : 'linear-gradient(135deg, #f5cc50, #c9880a)')
-                  : '#112248',
-                color: activeTab === tab ? (isLive ? 'white' : '#0c1b3a') : 'rgba(255,255,255,0.6)',
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 14px', borderRadius: 8,
+                border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: isActive ? 700 : 500,
+                background: isActive
+                  ? (t === 'live' ? '#c0392b' : '#d4a726')
+                  : 'transparent',
+                color: isActive ? (t === 'live' ? '#fff' : '#060f22') : 'rgba(255,255,255,0.5)',
+                transition: 'background 0.15s',
               }}
             >
-              {isLive && liveMatches.length > 0 && (
-                <span className="w-1.5 h-1.5 rounded-full bg-white pulse-dot" />
+              {t === 'live' && live.length > 0 && isActive && (
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? '#fff' : '#c0392b', flexShrink: 0 }}
+                  className="pulse-dot" />
               )}
-              {labels[tab]}
-              {isLive && liveMatches.length > 0 && (
-                <span className="w-4 h-4 rounded-full text-xs flex items-center justify-center font-800" style={{ background: 'rgba(255,255,255,0.25)' }}>
-                  {liveMatches.length}
+              {labels[t]}
+              {t === 'live' && live.length > 0 && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  background: isActive ? 'rgba(255,255,255,0.2)' : '#c0392b',
+                  color: '#fff', borderRadius: 10, padding: '1px 6px',
+                }}>
+                  {live.length}
                 </span>
               )}
             </button>
@@ -49,86 +60,79 @@ export default function Live() {
         })}
       </div>
 
-      <div className="scroll-area flex-1 px-4 pt-4 pb-4">
-        {activeTab === 'live' && (
-          <div className="stagger">
-            {liveMatches.length === 0 ? (
-              <EmptyState message="No live matches right now" sub="Check upcoming matches or come back later" />
-            ) : (
-              liveMatches.map(match => (
-                <LiveMatchCard key={match.id} match={match} onWatch={() => setShowPaywall(true)} />
-              ))
-            )}
-          </div>
+      <div className="scroll-area flex-1" style={{ padding: '16px 16px 20px' }}>
+        {tab === 'live' && (
+          live.length === 0 ? <EmptyLive /> :
+          <div className="stagger">{live.map(m => <LiveCard key={m.id} match={m} onWatch={() => setPaywall(true)} />)}</div>
         )}
-
-        {activeTab === 'upcoming' && (
-          <div className="flex flex-col gap-3 stagger">
-            {upcomingMatches.map(match => (
-              <UpcomingCard key={match.id} match={match} />
-            ))}
-          </div>
+        {tab === 'upcoming' && (
+          <div className="stagger">{upcoming.map(m => <UpcomingCard key={m.id} match={m} />)}</div>
         )}
-
-        {activeTab === 'results' && (
-          <div className="flex flex-col gap-3 stagger">
-            {results.map(match => (
-              <ResultCard key={match.id} match={match} />
-            ))}
-          </div>
+        {tab === 'results' && (
+          <div className="stagger">{results.map(m => <ResultCard key={m.id} match={m} />)}</div>
         )}
       </div>
 
-      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
+      {showPaywall && <PaywallSheet onClose={() => setPaywall(false)} />}
     </div>
   )
 }
 
-function LiveMatchCard({ match, onWatch }: { match: Match; onWatch: () => void }) {
+function LiveCard({ match, onWatch }: { match: Match; onWatch: () => void }) {
   return (
-    <div className="rounded-2xl overflow-hidden mb-4" style={{ background: '#112248' }}>
-      <div className="relative" style={{ height: 200 }}>
-        <img src={match.thumbnail} alt="match" className="w-full h-full object-cover" />
-        <div className="absolute inset-0" style={{ background: 'rgba(6,15,34,0.55)' }} />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <button
-            onClick={onWatch}
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(245,204,80,0.9)', boxShadow: '0 0 0 8px rgba(245,204,80,0.2)' }}
-          >
-            <Play size={24} fill="#0c1b3a" style={{ color: '#0c1b3a', marginLeft: 3 }} />
-          </button>
-        </div>
-        <div className="absolute top-3 left-3 flex items-center gap-2">
-          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full font-700" style={{ background: 'rgba(229,57,53,0.9)', fontSize: 12, fontWeight: 700 }}>
-            <span className="w-1.5 h-1.5 bg-white rounded-full pulse-dot" />
+    <div className="card" style={{ overflow: 'hidden', marginBottom: 16 }}>
+      {/* Thumbnail with play overlay */}
+      <div style={{ position: 'relative', height: 190 }}>
+        <img src={match.thumbnail} alt="match" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(6,15,34,0.5)' }} />
+        <button
+          onClick={onWatch}
+          style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 60, height: 60, borderRadius: '50%',
+            background: 'rgba(212,167,38,0.95)',
+            border: '3px solid rgba(255,255,255,0.2)',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <Play size={22} fill="#060f22" style={{ color: '#060f22', marginLeft: 3 }} />
+        </button>
+        <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6 }}>
+          <span className="badge badge-live" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
             LIVE
           </span>
-          <span className="px-3 py-1 rounded-full" style={{ background: 'rgba(0,0,0,0.6)', fontSize: 12, fontWeight: 600 }}>
+          <span className="badge" style={{ background: 'rgba(0,0,0,0.6)', color: '#fff', backdropFilter: 'blur(4px)' }}>
             {match.minute}'
           </span>
         </div>
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>{match.competition}</span>
-          <Lock size={14} style={{ color: '#f5cc50' }} />
+        <div style={{ position: 'absolute', bottom: 12, right: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Lock size={12} style={{ color: '#d4a726' }} />
+          <span style={{ fontSize: 11, color: '#d4a726', fontWeight: 600 }}>Members only</span>
         </div>
       </div>
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <span style={{ fontSize: 16, fontWeight: 700 }}>{match.homeTeam}</span>
-          <span style={{ fontSize: 28, fontWeight: 900 }}>{match.homeScore} : {match.awayScore}</span>
-          <span style={{ fontSize: 16, fontWeight: 700 }}>{match.awayTeam}</span>
+
+      {/* Score */}
+      <div style={{ padding: '14px 16px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{match.competition}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+            <MapPin size={11} /> {match.stadium}
+          </div>
         </div>
-        <div className="flex items-center gap-2 mt-2" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
-          <MapPin size={12} />
-          {match.stadium}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <span style={{ fontSize: 16, fontWeight: 700 }}>{match.homeTeam}</span>
+          <span style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-1px' }}>{match.homeScore} – {match.awayScore}</span>
+          <span style={{ fontSize: 16, fontWeight: 700 }}>{match.awayTeam}</span>
         </div>
         <button
           onClick={onWatch}
-          className="btn-gold w-full py-3 mt-4 font-bold flex items-center justify-center gap-2"
+          className="btn btn-primary"
+          style={{ width: '100%', padding: '12px 0', borderRadius: 10 }}
         >
-          <Play size={16} fill="currentColor" />
-          Watch Live
+          <Play size={15} fill="currentColor" /> Watch Live
         </button>
       </div>
     </div>
@@ -137,102 +141,147 @@ function LiveMatchCard({ match, onWatch }: { match: Match; onWatch: () => void }
 
 function UpcomingCard({ match }: { match: Match }) {
   return (
-    <div className="rounded-xl p-4" style={{ background: '#112248' }}>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="px-2 py-0.5 rounded-full text-xs font-700" style={{ background: '#162d60', fontSize: 11, fontWeight: 700 }}>{match.competition}</span>
-        <div className="flex items-center gap-1.5" style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
-          <Calendar size={11} />
-          {match.date} · {match.time}
-        </div>
+    <div className="card" style={{ padding: '14px 16px', marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span className="badge badge-blue">{match.competition}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
+          <Calendar size={11} /> {match.date} · {match.time}
+        </span>
       </div>
-      <div className="flex items-center justify-between mb-3">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <span style={{ fontSize: 15, fontWeight: 700 }}>{match.homeTeam}</span>
-        <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.4)' }}>vs</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.3)', padding: '4px 12px', background: '#112248', borderRadius: 6 }}>vs</span>
         <span style={{ fontSize: 15, fontWeight: 700 }}>{match.awayTeam}</span>
       </div>
-      <div className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12 }}>
-        <MapPin size={11} />
-        {match.stadium}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
+        <MapPin size={11} /> {match.stadium}
       </div>
     </div>
   )
 }
 
 function ResultCard({ match }: { match: Match }) {
-  const tenerife = match.homeTeam === 'CD Tenerife' ? 'home' : 'away'
-  const tScore = tenerife === 'home' ? match.homeScore! : match.awayScore!
-  const oScore = tenerife === 'home' ? match.awayScore! : match.homeScore!
+  const isTenHome = match.homeTeam === 'CD Tenerife'
+  const tScore = isTenHome ? match.homeScore! : match.awayScore!
+  const oScore = isTenHome ? match.awayScore! : match.homeScore!
   const outcome = tScore > oScore ? 'W' : tScore < oScore ? 'L' : 'D'
-  const colors = { W: '#1a7a3c', L: '#c0392b', D: '#5a5a5a' }
+  const outColor = { W: '#1a7a3c', L: '#a93226', D: '#4a4a5a' }[outcome]
 
   return (
-    <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: '#112248' }}>
-      <div className="w-8 h-8 rounded-full flex items-center justify-center font-900 text-sm shrink-0" style={{ background: colors[outcome] }}>
+    <button
+      className="card"
+      style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', width: '100%', cursor: 'pointer', marginBottom: 8 }}
+    >
+      <div style={{
+        width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+        background: outColor,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 13, fontWeight: 800, color: '#fff',
+      }}>
         {outcome}
       </div>
-      <div className="flex-1">
-        <div className="flex items-center justify-between mb-1">
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <span style={{ fontSize: 14, fontWeight: 700 }}>{match.homeTeam}</span>
-          <span style={{ fontSize: 18, fontWeight: 900 }}>{match.homeScore} : {match.awayScore}</span>
+          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.5px' }}>{match.homeScore} – {match.awayScore}</span>
           <span style={{ fontSize: 14, fontWeight: 700 }}>{match.awayTeam}</span>
         </div>
-        <div className="flex items-center gap-3" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
-          <span>{match.competition}</span>
-          <span>·</span>
-          <span>{match.date}</span>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+          {match.competition} · {match.date}
         </div>
       </div>
-      <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.3)' }} />
-    </div>
+      <ChevronRight size={15} style={{ color: 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
+    </button>
   )
 }
 
-function EmptyState({ message, sub }: { message: string; sub: string }) {
+function EmptyLive() {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: '#112248' }}>
-        <Play size={28} style={{ color: 'rgba(255,255,255,0.3)' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', textAlign: 'center' }}>
+      <div style={{ width: 56, height: 56, borderRadius: 14, background: '#0c1b3a', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+        <Play size={24} style={{ color: 'rgba(255,255,255,0.25)' }} />
       </div>
-      <p style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{message}</p>
-      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>{sub}</p>
+      <p style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 700 }}>No live matches</p>
+      <p style={{ margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>Check back on match day</p>
     </div>
   )
 }
 
-function PaywallModal({ onClose }: { onClose: () => void }) {
+function PaywallSheet({ onClose }: { onClose: () => void }) {
+  const features = [
+    'Watch every match live & on-demand',
+    'Exclusive behind-the-scenes content',
+    'Store discounts & priority ticket access',
+  ]
   return (
     <div
-      className="fixed inset-0 flex items-end justify-center z-50"
-      style={{ background: 'rgba(0,0,0,0.75)', maxWidth: 430, margin: '0 auto' }}
       onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 50, maxWidth: 430, margin: '0 auto',
+        background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end',
+      }}
     >
       <div
-        className="w-full rounded-t-3xl p-6 pb-10"
-        style={{ background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.1)' }}
         onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', borderRadius: '20px 20px 0 0',
+          background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.1)',
+          padding: '0 24px 40px',
+        }}
       >
-        <div className="w-10 h-1 rounded-full mx-auto mb-6" style={{ background: 'rgba(255,255,255,0.2)' }} />
-        <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'linear-gradient(135deg, #f5cc50, #c9880a)' }}>
-            <Lock size={28} style={{ color: '#0c1b3a' }} />
-          </div>
-          <h3 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>Members Only</h3>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>
-            Live match streaming is exclusive to CD Tenerife members. Join for just $5/month.
-          </p>
+        {/* Handle */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 20px' }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.15)' }} />
         </div>
-        <ul className="mb-6 flex flex-col gap-2">
-          {['Watch every match live & on-demand', 'Exclusive behind-the-scenes content', 'Store discounts & priority tickets'].map(f => (
-            <li key={f} className="flex items-center gap-3" style={{ fontSize: 14 }}>
-              <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style={{ background: '#1a7a3c' }}>✓</span>
-              {f}
-            </li>
-          ))}
-        </ul>
-        <button className="btn-gold w-full py-4 font-bold text-base mb-3">
-          Become a Member — $5/mo
+
+        {/* Close */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 14, right: 20,
+            width: 30, height: 30, borderRadius: 8,
+            background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff',
+          }}
+        >
+          <X size={16} />
         </button>
-        <button onClick={onClose} style={{ width: '100%', padding: '12px 0', fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>
+
+        {/* Icon */}
+        <div style={{
+          width: 56, height: 56, borderRadius: 14, marginBottom: 16,
+          background: 'rgba(212,167,38,0.12)', border: '1px solid rgba(212,167,38,0.25)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Lock size={24} style={{ color: '#d4a726' }} />
+        </div>
+
+        <h3 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 800 }}>Member exclusive</h3>
+        <p style={{ margin: '0 0 20px', fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
+          Live streaming is available to CD Tenerife members. Join today for just $5/month.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          {features.map(f => (
+            <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+                background: '#1a4026',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4l3 3 5-6" stroke="#4caf50" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)' }}>{f}</span>
+            </div>
+          ))}
+        </div>
+
+        <button className="btn btn-primary" style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15 }}>
+          Become a member — $5 / month
+        </button>
+        <button onClick={onClose} style={{ width: '100%', padding: '14px 0', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
           Maybe later
         </button>
       </div>

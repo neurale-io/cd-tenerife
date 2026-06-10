@@ -1,209 +1,283 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Star, ShoppingBag, PlayCircle, Newspaper } from 'lucide-react'
-import TopBar from '../components/TopBar'
+import { ArrowRight, Play } from 'lucide-react'
 import CrestIcon from '../components/CrestIcon'
 import { newsArticles, matches, products } from '../data'
+import type { Match } from '../types'
 
 export default function Home() {
   const navigate = useNavigate()
-  const liveMatch = matches.find(m => m.status === 'live')
-  const nextMatch = matches.find(m => m.status === 'upcoming')
+  const liveMatch   = matches.find(m => m.status === 'live')
+  const nextMatch   = matches.find(m => m.status === 'upcoming')
   const featuredNews = newsArticles.find(n => n.featured)
-  const recentNews = newsArticles.filter(n => !n.featured).slice(0, 3)
+  const recentNews   = newsArticles.filter(n => !n.featured).slice(0, 3)
   const featuredProduct = products[0]
+  const activeMatch = liveMatch ?? nextMatch
 
   return (
-    <div className="flex flex-col h-full">
-      <TopBar showLogo transparent />
-      <div className="scroll-area flex-1 px-4 pb-4 stagger">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-        {/* Hero */}
-        <div className="fade-in-up mb-5 rounded-2xl overflow-hidden relative" style={{ minHeight: 220 }}>
+      {/* ── Status bar spacer + logo bar ── */}
+      <div
+        className="safe-top shrink-0"
+        style={{ background: '#060f22', padding: '0 20px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <CrestIcon size={36} />
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.38)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>CD Tenerife</div>
+          <div style={{ fontSize: 10, color: '#d4a726', fontWeight: 500 }}>The Passion That Unites Us</div>
+        </div>
+      </div>
+
+      <div className="scroll-area flex-1" style={{ paddingBottom: 20 }}>
+
+        {/* ── Hero ── */}
+        <div
+          className="fade-up"
+          style={{ position: 'relative', height: 260, overflow: 'hidden' }}
+        >
           <img
             src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80"
-            alt="Stadium"
-            className="w-full h-full object-cover absolute inset-0"
-            style={{ minHeight: 220 }}
+            alt="Estadio Heliodoro"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(to top, #0c1b3a 0%, rgba(12,27,58,0.7) 50%, transparent 100%)' }}
-          />
-          <div className="relative p-5 flex flex-col justify-end" style={{ minHeight: 220 }}>
-            <div className="flex items-center gap-2 mb-2">
-              <CrestIcon size={28} />
-              <span className="text-gold-gradient font-black tracking-widest text-xs uppercase">CD Tenerife</span>
-            </div>
-            <h1 style={{ fontSize: 26, fontWeight: 900, lineHeight: 1.15, margin: 0 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #060f22 0%, rgba(6,15,34,0.5) 55%, transparent 100%)' }} />
+
+          {liveMatch && (
+            <button
+              onClick={() => navigate('/live')}
+              style={{
+                position: 'absolute', top: 16, left: 16,
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: '#c0392b', borderRadius: 6,
+                padding: '5px 10px', border: 'none', cursor: 'pointer',
+                color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '0.05em',
+              }}
+            >
+              <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+              LIVE NOW
+            </button>
+          )}
+
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 20px 20px' }}>
+            <h1 className="t-hero" style={{ margin: 0, marginBottom: 14 }}>
               The Passion<br />That Unites Us
             </h1>
-            {liveMatch && (
-              <div
-                className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full self-start"
-                style={{ background: 'rgba(229,57,53,0.9)', fontSize: 12, fontWeight: 700 }}
-                onClick={() => navigate('/live')}
-              >
-                <span className="w-2 h-2 rounded-full bg-white pulse-dot" />
-                LIVE — {liveMatch.homeTeam} {liveMatch.homeScore}:{liveMatch.awayScore} {liveMatch.awayTeam}
-              </div>
+            {activeMatch && (
+              <ScorePill match={activeMatch} onClick={() => navigate('/live')} />
             )}
           </div>
         </div>
 
-        {/* Quick actions */}
-        <div className="grid grid-cols-4 gap-2 mb-6 fade-in-up">
-          {[
-            { icon: Newspaper, label: 'News', path: '/news', color: '#1c3a7a' },
-            { icon: ShoppingBag, label: 'Store', path: '/store', color: '#1c3a7a' },
-            { icon: PlayCircle, label: 'Live', path: '/live', color: '#c0392b' },
-            { icon: Star, label: 'Join', path: '/profile', color: '#c9880a' },
-          ].map(({ icon: Icon, label, path, color }) => (
-            <button
-              key={label}
-              onClick={() => navigate(path)}
-              className="flex flex-col items-center gap-1.5 py-3 rounded-xl transition-transform active:scale-95"
-              style={{ background: color + '33', border: `1px solid ${color}55` }}
-            >
-              <Icon size={22} style={{ color }} strokeWidth={2} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>{label}</span>
-            </button>
-          ))}
-        </div>
+        {/* ── Content ── */}
+        <div style={{ padding: '24px 16px 0' }} className="stagger">
 
-        {/* Live / Next match */}
-        {(liveMatch || nextMatch) && (
-          <div className="mb-5 fade-in-up">
-            <div className="flex items-center justify-between mb-3">
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                {liveMatch ? 'Live Now' : 'Next Match'}
-              </span>
-              <button onClick={() => navigate('/live')} style={{ color: '#f5cc50', fontSize: 12, fontWeight: 600 }}>
+          {/* Next / Live match */}
+          {activeMatch && (
+            <section style={{ marginBottom: 28 }}>
+              <div className="section-header">
+                <span className="section-title">{liveMatch ? 'Live Match' : 'Next Match'}</span>
+                <button className="section-link btn btn-ghost" onClick={() => navigate('/live')} style={{ padding: 0 }}>
+                  All matches
+                </button>
+              </div>
+              <MatchCard match={activeMatch} onClick={() => navigate('/live')} />
+            </section>
+          )}
+
+          {/* News */}
+          <section style={{ marginBottom: 28 }}>
+            <div className="section-header">
+              <span className="section-title">Latest News</span>
+              <button className="section-link btn btn-ghost" onClick={() => navigate('/news')} style={{ padding: 0 }}>
                 See all
               </button>
             </div>
-            <MatchCard match={liveMatch || nextMatch!} onClick={() => navigate('/live')} />
-          </div>
-        )}
 
-        {/* Featured news */}
-        {featuredNews && (
-          <div className="mb-5 fade-in-up">
-            <div className="flex items-center justify-between mb-3">
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Latest News</span>
-              <button onClick={() => navigate('/news')} style={{ color: '#f5cc50', fontSize: 12, fontWeight: 600 }}>See all</button>
-            </div>
-            <button
-              onClick={() => navigate('/news')}
-              className="w-full rounded-2xl overflow-hidden relative text-left mb-2.5 active:opacity-90"
-              style={{ height: 180 }}
-            >
-              <img src={featuredNews.image} alt={featuredNews.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(6,15,34,0.95) 0%, transparent 55%)' }} />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-700" style={{ background: '#c9880a', fontSize: 10, fontWeight: 700 }}>FEATURED</span>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{featuredNews.date}</span>
+            {featuredNews && (
+              <button
+                onClick={() => navigate('/news')}
+                style={{
+                  display: 'block', width: '100%', position: 'relative',
+                  height: 200, borderRadius: 12, overflow: 'hidden',
+                  marginBottom: 10, border: 'none', cursor: 'pointer', padding: 0,
+                }}
+              >
+                <img src={featuredNews.image} alt={featuredNews.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(6,15,34,0.95) 0%, transparent 50%)' }} />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px' }}>
+                  <span className="badge badge-blue" style={{ marginBottom: 8, display: 'inline-block' }}>Featured</span>
+                  <p style={{ margin: 0, fontSize: 15, fontWeight: 700, lineHeight: 1.35, color: '#fff', textAlign: 'left' }}>
+                    {featuredNews.title}
+                  </p>
                 </div>
-                <p style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.3 }}>{featuredNews.title}</p>
-              </div>
-            </button>
-            <div className="flex flex-col gap-2">
-              {recentNews.map(article => (
+              </button>
+            )}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {recentNews.map((article, i) => (
                 <button
                   key={article.id}
                   onClick={() => navigate('/news')}
-                  className="flex gap-3 rounded-xl p-2.5 active:opacity-80 text-left"
-                  style={{ background: '#112248' }}
+                  style={{
+                    display: 'flex', gap: 12, alignItems: 'center',
+                    padding: '12px 0',
+                    background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                    borderBottom: i < recentNews.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                  }}
                 >
-                  <img src={article.image} alt={article.title} className="w-16 h-16 rounded-lg object-cover shrink-0" />
-                  <div className="min-w-0">
-                    <p style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.35, marginBottom: 4 }} className="line-clamp-2">{article.title}</p>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>{article.date} · {article.readTime} min read</span>
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    style={{ width: 64, height: 64, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+                  />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ margin: '0 0 5px', fontSize: 14, fontWeight: 600, lineHeight: 1.35, color: '#fff',
+                      overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {article.title}
+                    </p>
+                    <span className="t-meta">{article.date} · {article.readTime} min read</span>
                   </div>
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* Featured product */}
-        <div className="fade-in-up mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Club Store</span>
-            <button onClick={() => navigate('/store')} style={{ color: '#f5cc50', fontSize: 12, fontWeight: 600 }}>See all</button>
-          </div>
-          <button
-            onClick={() => navigate('/store')}
-            className="w-full rounded-2xl p-4 flex gap-4 items-center active:opacity-90 text-left"
-            style={{ background: '#112248', border: '1px solid rgba(245,204,80,0.15)' }}
-          >
-            <img src={featuredProduct.image} alt={featuredProduct.name} className="w-20 h-20 rounded-xl object-cover" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2 py-0.5 rounded text-xs font-700" style={{ background: '#c9880a', fontSize: 10, fontWeight: 700 }}>NEW</span>
-              </div>
-              <p style={{ fontSize: 15, fontWeight: 700 }}>{featuredProduct.name}</p>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginBottom: 8 }}>{featuredProduct.description}</p>
-              <p className="text-gold-gradient" style={{ fontSize: 18, fontWeight: 900 }}>€{featuredProduct.price}</p>
-            </div>
-            <ArrowRight size={18} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-          </button>
-        </div>
-
-        {/* Membership CTA */}
-        <div
-          className="fade-in-up rounded-2xl p-5 mb-2"
-          style={{ background: 'linear-gradient(135deg, #162d60 0%, #1c3a7a 100%)', border: '1px solid rgba(245,204,80,0.25)' }}
-        >
-          <div className="flex items-start gap-3">
-            <Star size={28} style={{ color: '#f5cc50', flexShrink: 0, marginTop: 2 }} />
-            <div className="flex-1">
-              <p style={{ fontWeight: 800, fontSize: 16, marginBottom: 4 }}>Become a Blue Member</p>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 14 }}>
-                Exclusive content, store discounts, priority tickets & more.
-              </p>
-              <button
-                onClick={() => navigate('/profile')}
-                className="btn-gold px-5 py-2.5 text-sm font-bold"
-              >
-                Join for $5 / month
+          {/* Store highlight */}
+          <section style={{ marginBottom: 28 }}>
+            <div className="section-header">
+              <span className="section-title">Club Store</span>
+              <button className="section-link btn btn-ghost" onClick={() => navigate('/store')} style={{ padding: 0 }}>
+                Shop all
               </button>
             </div>
-          </div>
+            <button
+              onClick={() => navigate('/store')}
+              className="card"
+              style={{
+                display: 'flex', gap: 16, alignItems: 'center',
+                padding: 14, width: '100%', cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              <img
+                src={featuredProduct.image}
+                alt={featuredProduct.name}
+                style={{ width: 80, height: 80, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span className="badge badge-gold" style={{ marginBottom: 6, display: 'inline-block' }}>New</span>
+                <p style={{ margin: '0 0 3px', fontSize: 15, fontWeight: 700, color: '#fff' }}>{featuredProduct.name}</p>
+                <p style={{ margin: '0 0 8px', fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{featuredProduct.description}</p>
+                <span className="t-price">€{featuredProduct.price}</span>
+              </div>
+              <ArrowRight size={16} style={{ color: 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
+            </button>
+          </section>
+
+          {/* Membership */}
+          <section>
+            <div
+              className="card"
+              style={{ padding: '20px 16px', borderColor: 'rgba(212,167,38,0.25)' }}
+            >
+              <p style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 700 }}>Become a Member</p>
+              <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.55 }}>
+                Live streaming, store discounts, and exclusive content — from $5 / month.
+              </p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => navigate('/profile')}
+                  style={{ flex: 1, padding: '12px 0', borderRadius: 10, fontSize: 14 }}
+                >
+                  Join now
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => navigate('/profile')}
+                  style={{ flex: 1, padding: '12px 0', borderRadius: 10, fontSize: 14 }}
+                >
+                  Learn more
+                </button>
+              </div>
+            </div>
+          </section>
+
         </div>
       </div>
     </div>
   )
 }
 
-function MatchCard({ match, onClick }: { match: typeof matches[0]; onClick: () => void }) {
+/* ── ScorePill ── */
+function ScorePill({ match, onClick }: { match: Match; onClick: () => void }) {
   const isLive = match.status === 'live'
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-2xl overflow-hidden relative text-left active:opacity-90"
-      style={{ background: '#112248' }}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 10,
+        background: 'rgba(12,27,58,0.85)', backdropFilter: 'blur(8px)',
+        borderRadius: 10, padding: '9px 14px',
+        border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer',
+      }}
     >
-      <img src={match.thumbnail} alt="match" className="w-full h-28 object-cover opacity-40" />
-      <div className="absolute inset-0 p-4 flex flex-col justify-between">
-        <div className="flex items-center justify-between">
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{match.competition}</span>
-          {isLive && (
-            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-700" style={{ background: 'rgba(229,57,53,0.9)', fontSize: 11, fontWeight: 700 }}>
-              <span className="w-1.5 h-1.5 bg-white rounded-full pulse-dot" />
+      {isLive && (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: '#e74c3c' }}>
+          <span className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#e74c3c', flexShrink: 0 }} />
+          {match.minute}'
+        </span>
+      )}
+      <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{match.homeTeam}</span>
+      <span style={{ fontSize: 15, fontWeight: 800, color: '#fff', minWidth: 36, textAlign: 'center' }}>
+        {match.homeScore !== undefined ? `${match.homeScore}–${match.awayScore}` : 'vs'}
+      </span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{match.awayTeam}</span>
+      {isLive && <Play size={13} fill="#d4a726" style={{ color: '#d4a726', marginLeft: 2 }} />}
+    </button>
+  )
+}
+
+/* ── MatchCard ── */
+function MatchCard({ match, onClick }: { match: Match; onClick: () => void }) {
+  const isLive = match.status === 'live'
+  return (
+    <button
+      onClick={onClick}
+      className="card"
+      style={{ width: '100%', cursor: 'pointer', overflow: 'hidden', textAlign: 'left', padding: 0 }}
+    >
+      {/* Thin colored top bar */}
+      <div style={{ height: 3, background: isLive ? '#c0392b' : '#d4a726' }} />
+
+      <div style={{ padding: '14px 16px' }}>
+        {/* Meta row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>{match.competition}</span>
+          {isLive ? (
+            <span className="badge badge-live" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span className="pulse-dot" style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
               LIVE {match.minute}'
             </span>
+          ) : (
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{match.date} · {match.time}</span>
           )}
         </div>
-        <div className="flex items-center justify-center gap-4">
-          <span style={{ fontSize: 14, fontWeight: 700, flex: 1, textAlign: 'right' }}>{match.homeTeam}</span>
-          <span style={{ fontSize: 22, fontWeight: 900, minWidth: 56, textAlign: 'center' }}>
-            {match.homeScore !== undefined ? `${match.homeScore} : ${match.awayScore}` : 'vs'}
+
+        {/* Score row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, flex: 1, textAlign: 'left' }}>{match.homeTeam}</span>
+          <span style={{
+            fontSize: 26, fontWeight: 800, minWidth: 72, textAlign: 'center', letterSpacing: '-0.5px',
+            color: isLive ? '#fff' : 'rgba(255,255,255,0.35)',
+          }}>
+            {match.homeScore !== undefined ? `${match.homeScore} – ${match.awayScore}` : '—'}
           </span>
-          <span style={{ fontSize: 14, fontWeight: 700, flex: 1, textAlign: 'left' }}>{match.awayTeam}</span>
+          <span style={{ fontSize: 15, fontWeight: 700, flex: 1, textAlign: 'right' }}>{match.awayTeam}</span>
         </div>
-        <div className="text-center" style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
-          {match.date} · {match.time} · {match.stadium}
+
+        {/* Stadium */}
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
+          {match.stadium}
         </div>
       </div>
     </button>

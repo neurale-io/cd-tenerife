@@ -1,57 +1,54 @@
-import { ArrowLeft, Bell } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import CrestIcon from './CrestIcon'
 
 interface Props {
   title?: string
   showBack?: boolean
-  showLogo?: boolean
-  transparent?: boolean
+  right?: React.ReactNode
+  border?: boolean
 }
 
-export default function TopBar({ title, showBack, showLogo, transparent }: Props) {
+export default function TopBar({ title, showBack, right, border = true }: Props) {
   const navigate = useNavigate()
 
   return (
     <div
-      className="safe-top shrink-0 flex items-center px-4 pb-3"
+      className="safe-top shrink-0"
       style={{
-        background: transparent ? 'transparent' : '#060f22',
-        borderBottom: transparent ? 'none' : '1px solid rgba(255,255,255,0.07)',
+        background: '#060f22',
+        borderBottom: border ? '1px solid rgba(255,255,255,0.07)' : 'none',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 16px 12px',
+        gap: 12,
+        minHeight: 52,
       }}
     >
-      {showBack ? (
+      {showBack && (
         <button
           onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.08)' }}
+          style={{
+            width: 36, height: 36,
+            borderRadius: 10,
+            background: 'rgba(255,255,255,0.07)',
+            border: 'none',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff',
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={18} />
         </button>
-      ) : showLogo ? (
-        <CrestIcon size={34} />
-      ) : (
-        <div className="w-9" />
       )}
 
-      <div className="flex-1 text-center">
-        {title && (
-          <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            {title}
-          </span>
-        )}
-      </div>
+      {title && (
+        <span style={{ fontSize: 16, fontWeight: 700, flex: 1 }}>
+          {title}
+        </span>
+      )}
 
-      <button
-        className="w-9 h-9 rounded-full flex items-center justify-center relative"
-        style={{ background: 'rgba(255,255,255,0.08)' }}
-      >
-        <Bell size={18} />
-        <span
-          className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full pulse-dot"
-          style={{ background: '#f5cc50' }}
-        />
-      </button>
+      {right && <div style={{ marginLeft: 'auto' }}>{right}</div>}
     </div>
   )
 }
