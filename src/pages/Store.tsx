@@ -2,23 +2,31 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Ticket, ChevronRight } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { products, matches } from '../data'
+import type { Product } from '../types'
 
 type Tab = 'tienda' | 'entradas'
-type StoreView = 'main' | 'product' | 'purchase'
+type StoreView = 'main' | 'list' | 'product' | 'purchase'
 
 export default function Store() {
   const navigate = useNavigate()
   const location = useLocation()
   const activeTab: Tab = location.pathname === '/entradas' ? 'entradas' : 'tienda'
   const [view, setView] = useState<StoreView>('main')
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   useEffect(() => { setView('main') }, [location.pathname])
 
-  const jersey = products.find(p => p.category === 'jersey') ?? products[0]
+  const featuredJersey = products.find(p => p.category === 'jersey') ?? products[0]
+  const jerseys = products.filter(p => p.category === 'jersey')
   const upcomingMatch = matches.find(m => m.status === 'upcoming')
 
-  if (view === 'product') {
-    return <ProductView product={jersey} onBack={() => setView('main')} />
+  const openProduct = (p: Product) => { setSelectedProduct(p); setView('product') }
+
+  if (view === 'list') {
+    return <ProductListView products={products} onSelect={openProduct} onBack={() => setView('main')} />
+  }
+  if (view === 'product' && selectedProduct) {
+    return <ProductView product={selectedProduct} onBack={() => setView(view === 'product' ? 'main' : 'list')} />
   }
   if (view === 'purchase') {
     return <PurchaseView match={upcomingMatch} onBack={() => setView('main')} />
@@ -58,10 +66,7 @@ export default function Store() {
       </div>
 
       {/* ── Tab toggle ── */}
-      <div style={{
-        padding: '14px 16px 0',
-        background: '#060f22', flexShrink: 0,
-      }}>
+      <div style={{ padding: '14px 16px 0', background: '#060f22', flexShrink: 0 }}>
         <div style={{
           display: 'flex', width: '100%',
           background: '#0c1b3a', borderRadius: 10,
@@ -91,11 +96,12 @@ export default function Store() {
 
       {/* ── Content ── */}
       <div className="scroll-area flex-1" style={{ padding: '14px 16px 20px' }}>
-
         {activeTab === 'tienda' ? (
           <TiendaTab
-            product={jersey}
-            onViewProduct={() => setView('product')}
+            featured={featuredJersey}
+            jerseys={jerseys}
+            onViewProduct={p => openProduct(p)}
+            onViewAll={() => setView('list')}
             onViewEntradas={() => navigate('/entradas')}
           />
         ) : (
@@ -104,7 +110,6 @@ export default function Store() {
             onBuyTickets={() => setView('purchase')}
           />
         )}
-
       </div>
     </div>
   )
@@ -112,18 +117,22 @@ export default function Store() {
 
 /* ── TIENDA tab ─────────────────────────────────────────────── */
 function TiendaTab({
-  product,
+  featured,
+  jerseys,
   onViewProduct,
+  onViewAll,
   onViewEntradas,
 }: {
-  product: typeof products[0]
-  onViewProduct: () => void
+  featured: Product
+  jerseys: Product[]
+  onViewProduct: (p: Product) => void
+  onViewAll: () => void
   onViewEntradas: () => void
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-      {/* Jersey card */}
+      {/* Featured jersey card */}
       <div style={{
         background: '#0c1b3a', borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.07)',
@@ -131,15 +140,25 @@ function TiendaTab({
         display: 'flex', gap: 14, alignItems: 'flex-start',
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: '0 0 2px', fontSize: 16, fontWeight: 700 }}>{product.name}</p>
-          <p style={{ margin: '0 0 8px', fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
-            {product.description}
+          {featured.badge && (
+            <span style={{
+              display: 'inline-block', marginBottom: 6,
+              background: 'rgba(212,167,38,0.15)', color: '#d4a726',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+              padding: '2px 8px', borderRadius: 4,
+            }}>
+              {featured.badge}
+            </span>
+          )}
+          <p style={{ margin: '0 0 2px', fontSize: 15, fontWeight: 700 }}>{featured.name}</p>
+          <p style={{ margin: '0 0 10px', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
+            {featured.description}
           </p>
-          <p style={{ margin: '0 0 14px', fontSize: 18, fontWeight: 800, color: '#fff' }}>
-            {product.price.toFixed(2).replace('.', ',')} €
+          <p style={{ margin: '0 0 14px', fontSize: 20, fontWeight: 900, color: '#fff' }}>
+            {featured.price.toFixed(2).replace('.', ',')} €
           </p>
           <button
-            onClick={onViewProduct}
+            onClick={() => onViewProduct(featured)}
             style={{
               padding: '8px 18px',
               background: 'transparent',
@@ -153,15 +172,39 @@ function TiendaTab({
           </button>
         </div>
         <img
-          src={product.image}
-          alt={product.name}
-          style={{ width: 88, height: 88, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+          src={featured.image}
+          alt={featured.name}
+          style={{ width: 90, height: 90, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
         />
       </div>
 
-      <LinkRow label="Ver todas las camisetas" onClick={onViewProduct} />
-      <LinkRow label="Ver próximos partidos" onClick={onViewEntradas} />
+      {/* Other jerseys mini-row */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        {jerseys.slice(1).map(p => (
+          <button
+            key={p.id}
+            onClick={() => onViewProduct(p)}
+            style={{
+              flex: 1, background: '#0c1b3a', borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.07)',
+              padding: '10px 8px', cursor: 'pointer', textAlign: 'left',
+            }}
+          >
+            <img src={p.image} alt={p.name}
+              style={{ width: '100%', height: 60, objectFit: 'cover', borderRadius: 7, display: 'block', marginBottom: 7 }} />
+            <p style={{ margin: '0 0 2px', fontSize: 11, fontWeight: 700, color: '#fff',
+              overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+              {p.name}
+            </p>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: '#d4a726' }}>
+              {p.price.toFixed(2).replace('.', ',')} €
+            </p>
+          </button>
+        ))}
+      </div>
 
+      <LinkRow label="Ver todas las camisetas" onClick={onViewAll} />
+      <LinkRow label="Ver próximos partidos" onClick={onViewEntradas} />
     </div>
   )
 }
@@ -176,7 +219,6 @@ function EntradasTab({
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-
       <div style={{
         background: '#0c1b3a', borderRadius: 14,
         border: '1px solid rgba(255,255,255,0.07)',
@@ -227,7 +269,112 @@ function EntradasTab({
       </div>
 
       <LinkRow label="Ver próximos partidos" onClick={() => {}} />
+    </div>
+  )
+}
 
+/* ── All products list view ──────────────────────────────────── */
+function ProductListView({
+  products: allProducts,
+  onSelect,
+  onBack,
+}: {
+  products: Product[]
+  onSelect: (p: Product) => void
+  onBack: () => void
+}) {
+  const [filter, setFilter] = useState<string>('all')
+  const categories = [
+    { id: 'all', label: 'Todo' },
+    { id: 'jersey', label: 'Camisetas' },
+    { id: 'training', label: 'Equipación' },
+    { id: 'kids', label: 'Niños' },
+    { id: 'accessories', label: 'Accesorios' },
+  ]
+  const filtered = filter === 'all' ? allProducts : allProducts.filter(p => p.category === filter)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#060f22' }}>
+
+      <div
+        className="safe-top shrink-0"
+        style={{
+          display: 'flex', alignItems: 'center', position: 'relative',
+          padding: '0 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ArrowLeft size={18} />
+        </button>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 16, fontWeight: 700, pointerEvents: 'none' }}>
+          TIENDA
+        </span>
+      </div>
+
+      {/* Category filters */}
+      <div style={{ display: 'flex', gap: 6, padding: '12px 16px', overflowX: 'auto', flexShrink: 0, scrollbarWidth: 'none' }}>
+        {categories.map(c => (
+          <button
+            key={c.id}
+            onClick={() => setFilter(c.id)}
+            style={{
+              whiteSpace: 'nowrap', padding: '7px 14px', borderRadius: 20,
+              border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              background: filter === c.id ? '#d4a726' : '#0c1b3a',
+              color: filter === c.id ? '#060f22' : 'rgba(255,255,255,0.55)',
+              flexShrink: 0,
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="scroll-area flex-1" style={{ padding: '0 16px 20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {filtered.map(p => (
+            <button
+              key={p.id}
+              onClick={() => onSelect(p)}
+              style={{
+                display: 'flex', gap: 14, alignItems: 'center',
+                background: '#0c1b3a', borderRadius: 12,
+                border: '1px solid rgba(255,255,255,0.07)',
+                padding: 12, cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              <img src={p.image} alt={p.name}
+                style={{ width: 76, height: 76, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {p.badge && (
+                  <span style={{
+                    display: 'inline-block', marginBottom: 4,
+                    background: 'rgba(212,167,38,0.15)', color: '#d4a726',
+                    fontSize: 9, fontWeight: 700, letterSpacing: '0.05em',
+                    padding: '2px 6px', borderRadius: 3,
+                  }}>
+                    {p.badge}
+                  </span>
+                )}
+                <p style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 700, color: '#fff' }}>
+                  {p.name}
+                </p>
+                <p style={{ margin: '0 0 6px', fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>
+                  {p.description}
+                </p>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: '#d4a726' }}>
+                  {p.price.toFixed(2).replace('.', ',')} €
+                </p>
+              </div>
+              <div style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {!p.inStock && (
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>Agotado</span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -252,7 +399,7 @@ function LinkRow({ label, onClick }: { label: string; onClick: () => void }) {
 }
 
 /* ── Product detail view ─────────────────────────────────────── */
-function ProductView({ product, onBack }: { product: typeof products[0]; onBack: () => void }) {
+function ProductView({ product, onBack }: { product: Product; onBack: () => void }) {
   const [size, setSize] = useState<string | null>(null)
   const [added, setAdded] = useState(false)
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
@@ -284,12 +431,22 @@ function ProductView({ product, onBack }: { product: typeof products[0]; onBack:
         <img
           src={product.image}
           alt={product.name}
-          style={{ width: '100%', height: 260, objectFit: 'cover', display: 'block' }}
+          style={{ width: '100%', height: 280, objectFit: 'cover', display: 'block' }}
         />
         <div style={{ padding: '20px 16px' }}>
-          <p style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 800 }}>{product.name}</p>
+          {product.badge && (
+            <span style={{
+              display: 'inline-block', marginBottom: 8,
+              background: 'rgba(212,167,38,0.15)', color: '#d4a726',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+              padding: '3px 9px', borderRadius: 4,
+            }}>
+              {product.badge}
+            </span>
+          )}
+          <p style={{ margin: '0 0 4px', fontSize: 22, fontWeight: 800 }}>{product.name}</p>
           <p style={{ margin: '0 0 14px', fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{product.description}</p>
-          <p style={{ margin: '0 0 20px', fontSize: 24, fontWeight: 900, color: '#d4a726' }}>
+          <p style={{ margin: '0 0 22px', fontSize: 28, fontWeight: 900, color: '#d4a726' }}>
             {product.price.toFixed(2).replace('.', ',')} €
           </p>
 
@@ -302,7 +459,7 @@ function ProductView({ product, onBack }: { product: typeof products[0]; onBack:
                 key={s}
                 onClick={() => setSize(s)}
                 style={{
-                  width: 44, height: 44, borderRadius: 8,
+                  width: 48, height: 48, borderRadius: 10,
                   border: size === s ? '2px solid #d4a726' : '1px solid rgba(255,255,255,0.15)',
                   background: size === s ? 'rgba(212,167,38,0.12)' : '#0c1b3a',
                   color: size === s ? '#d4a726' : '#fff',
@@ -322,13 +479,19 @@ function ProductView({ product, onBack }: { product: typeof products[0]; onBack:
         paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 24px)',
         background: '#060f22', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0,
       }}>
-        <button
-          onClick={handleAdd}
-          className="btn btn-primary"
-          style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, fontWeight: 700 }}
-        >
-          {added ? '¡Añadido al carrito!' : 'Añadir al carrito'}
-        </button>
+        {product.inStock ? (
+          <button
+            onClick={handleAdd}
+            className="btn btn-primary"
+            style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, fontWeight: 700 }}
+          >
+            {added ? '¡Añadido al carrito!' : 'Añadir al carrito'}
+          </button>
+        ) : (
+          <button disabled className="btn" style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, fontWeight: 700, background: '#0c1b3a', color: 'rgba(255,255,255,0.3)', cursor: 'not-allowed' }}>
+            Agotado
+          </button>
+        )}
       </div>
 
     </div>
@@ -407,19 +570,9 @@ function PurchaseView({ match, onBack }: { match: typeof matches[0] | undefined;
             Cantidad
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <button
-              onClick={() => setQty(q => Math.max(1, q - 1))}
-              style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              −
-            </button>
+            <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
             <span style={{ fontSize: 20, fontWeight: 700, minWidth: 24, textAlign: 'center' }}>{qty}</span>
-            <button
-              onClick={() => setQty(q => Math.min(6, q + 1))}
-              style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              +
-            </button>
+            <button onClick={() => setQty(q => Math.min(6, q + 1))} style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
           </div>
         </div>
 
