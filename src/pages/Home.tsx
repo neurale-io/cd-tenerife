@@ -9,7 +9,7 @@ const menuItems = [
     number: 1,
     title: 'AFILIACIÓN',
     subtitle: '5€ / mes',
-    path: '/profile',
+    path: '/afiliacion',
   },
   {
     icon: Newspaper,

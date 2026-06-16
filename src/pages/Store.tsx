@@ -1,256 +1,312 @@
 import { useState } from 'react'
-import { ShoppingCart, Check, X, Minus, Plus } from 'lucide-react'
-import TopBar from '../components/TopBar'
-import { products } from '../data'
-import type { Product } from '../types'
+import { ArrowLeft, Ticket, ChevronRight } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { products, matches } from '../data'
 
-const CATEGORIES = ['All', 'Jersey', 'Training', 'Accessories', 'Kids'] as const
-type Cat = typeof CATEGORIES[number]
+type Tab = 'tienda' | 'entradas'
+type StoreView = 'main' | 'product' | 'purchase'
 
 export default function Store() {
-  const [activeCat, setActiveCat]     = useState<Cat>('All')
-  const [cartIds, setCartIds]         = useState<string[]>([])
-  const [toast, setToast]             = useState<string | null>(null)
-  const [detail, setDetail]           = useState<Product | null>(null)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const defaultTab: Tab = location.pathname === '/entradas' ? 'entradas' : 'tienda'
+  const [activeTab, setActiveTab] = useState<Tab>(defaultTab)
+  const [view, setView] = useState<StoreView>('main')
 
-  const filtered = activeCat === 'All'
-    ? products
-    : products.filter(p => p.category === activeCat.toLowerCase())
+  const jersey = products.find(p => p.category === 'jersey') ?? products[0]
+  const upcomingMatch = matches.find(m => m.status === 'upcoming')
 
-  const addToCart = (product: Product) => {
-    setCartIds(prev => [...prev, product.id])
-    setToast(product.name)
-    setTimeout(() => setToast(null), 2400)
+  if (view === 'product') {
+    return <ProductView product={jersey} onBack={() => setView('main')} />
   }
-
-  if (detail) {
-    return (
-      <ProductDetail
-        product={detail}
-        inCart={cartIds.includes(detail.id)}
-        onBack={() => setDetail(null)}
-        onAdd={() => { addToCart(detail); setDetail(null) }}
-      />
-    )
+  if (view === 'purchase') {
+    return <PurchaseView match={upcomingMatch} onBack={() => setView('main')} />
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <TopBar
-        title="Store"
-        right={
-          cartIds.length > 0 ? (
-            <button
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: '#d4a726', borderRadius: 8, padding: '7px 12px',
-                border: 'none', cursor: 'pointer', color: '#060f22', fontSize: 13, fontWeight: 700,
-              }}
-            >
-              <ShoppingCart size={15} />
-              {cartIds.length}
-            </button>
-          ) : undefined
-        }
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#060f22' }}>
 
-      {/* Category scroll */}
-      <div style={{
-        display: 'flex', gap: 8, padding: '0 16px 12px',
-        overflowX: 'auto', flexShrink: 0,
-        background: '#060f22', borderBottom: '1px solid rgba(255,255,255,0.07)',
-        scrollbarWidth: 'none',
-      }}>
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCat(cat)}
-            style={{
-              padding: '7px 16px', borderRadius: 8, flexShrink: 0,
-              border: activeCat === cat ? 'none' : '1px solid rgba(255,255,255,0.1)',
-              background: activeCat === cat ? '#d4a726' : 'transparent',
-              color:      activeCat === cat ? '#060f22' : 'rgba(255,255,255,0.55)',
-              fontSize: 13, fontWeight: activeCat === cat ? 700 : 500,
-              cursor: 'pointer', transition: 'background 0.15s, color 0.15s',
-            }}
-          >
-            {cat}
-          </button>
-        ))}
+      {/* ── Header ── */}
+      <div
+        className="safe-top shrink-0"
+        style={{
+          display: 'flex', alignItems: 'center', position: 'relative',
+          padding: '0 16px 14px',
+          background: '#060f22',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'rgba(255,255,255,0.07)', border: 'none',
+            cursor: 'pointer', color: '#fff', flexShrink: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <span style={{
+          position: 'absolute', left: 0, right: 0, textAlign: 'center',
+          fontSize: 16, fontWeight: 700, letterSpacing: '0.04em',
+          pointerEvents: 'none',
+        }}>
+          TIENDA & ENTRADAS
+        </span>
       </div>
 
-      <div className="scroll-area flex-1" style={{ padding: '16px 16px 20px' }}>
-
-        {/* Member banner */}
+      {/* ── Tab toggle ── */}
+      <div style={{
+        padding: '14px 16px 0',
+        background: '#060f22', flexShrink: 0,
+      }}>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '12px 14px', borderRadius: 10, marginBottom: 16,
-          background: '#0c1b3a', border: '1px solid rgba(212,167,38,0.2)',
+          display: 'flex', width: '100%',
+          background: '#0c1b3a', borderRadius: 10,
+          border: '1px solid rgba(255,255,255,0.1)',
+          overflow: 'hidden', padding: 3,
         }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-            background: 'rgba(212,167,38,0.12)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <ShoppingCart size={16} style={{ color: '#d4a726' }} />
-          </div>
-          <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Members save 10–20% on every order</p>
-            <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>Join for $5/month to unlock discounts</p>
-          </div>
-        </div>
-
-        {/* Grid */}
-        <div
-          className="stagger"
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}
-        >
-          {filtered.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onOpen={() => setDetail(product)}
-              onAdd={() => addToCart(product)}
-            />
+          {(['tienda', 'entradas'] as Tab[]).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                flex: 1, padding: '9px 0',
+                border: 'none', cursor: 'pointer',
+                fontSize: 13, fontWeight: 700,
+                letterSpacing: '0.05em', textTransform: 'uppercase',
+                background: activeTab === tab ? '#fff' : 'transparent',
+                color: activeTab === tab ? '#060f22' : 'rgba(255,255,255,0.45)',
+                borderRadius: 7,
+                transition: 'background 0.15s, color 0.15s',
+              }}
+            >
+              {tab === 'tienda' ? 'TIENDA' : 'ENTRADAS'}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: '#1a4026', borderRadius: 30, padding: '10px 16px',
-          border: '1px solid rgba(255,255,255,0.1)', zIndex: 100,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-          animation: 'fadeUp 0.25s ease-out',
-          whiteSpace: 'nowrap',
-        }}>
-          <Check size={15} style={{ color: '#4caf50' }} />
-          <span style={{ fontSize: 13, fontWeight: 600 }}>Added to cart</span>
-        </div>
-      )}
+      {/* ── Content ── */}
+      <div className="scroll-area flex-1" style={{ padding: '14px 16px 20px' }}>
+
+        {activeTab === 'tienda' ? (
+          <TiendaTab
+            product={jersey}
+            onViewProduct={() => setView('product')}
+            onViewEntradas={() => setActiveTab('entradas')}
+          />
+        ) : (
+          <EntradasTab
+            match={upcomingMatch}
+            onBuyTickets={() => setView('purchase')}
+          />
+        )}
+
+      </div>
     </div>
   )
 }
 
-function ProductCard({ product, onOpen, onAdd }: { product: Product; onOpen: () => void; onAdd: () => void }) {
+/* ── TIENDA tab ─────────────────────────────────────────────── */
+function TiendaTab({
+  product,
+  onViewProduct,
+  onViewEntradas,
+}: {
+  product: typeof products[0]
+  onViewProduct: () => void
+  onViewEntradas: () => void
+}) {
   return (
-    <div
-      className="card"
-      style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
-    >
-      <button
-        onClick={onOpen}
-        style={{ position: 'relative', height: 150, border: 'none', padding: 0, cursor: 'pointer', background: 'none' }}
-      >
-        <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        {product.badge && (
-          <span
-            className="badge badge-gold"
-            style={{ position: 'absolute', top: 8, left: 8 }}
-          >
-            {product.badge}
-          </span>
-        )}
-        {!product.inStock && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'rgba(6,15,34,0.65)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Sold Out</span>
-          </div>
-        )}
-      </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-      <div style={{ padding: '10px 12px 12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div>
-          <p style={{ margin: '0 0 3px', fontSize: 13, fontWeight: 700, lineHeight: 1.3, color: '#fff' }}>
-            {product.name}
-          </p>
-          <p style={{ margin: 0, fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>
+      {/* Jersey card */}
+      <div style={{
+        background: '#0c1b3a', borderRadius: 14,
+        border: '1px solid rgba(255,255,255,0.07)',
+        padding: 16,
+        display: 'flex', gap: 14, alignItems: 'flex-start',
+      }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: '0 0 2px', fontSize: 16, fontWeight: 700 }}>{product.name}</p>
+          <p style={{ margin: '0 0 8px', fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
             {product.description}
           </p>
+          <p style={{ margin: '0 0 14px', fontSize: 18, fontWeight: 800, color: '#fff' }}>
+            {product.price.toFixed(2).replace('.', ',')} €
+          </p>
+          <button
+            onClick={onViewProduct}
+            style={{
+              padding: '8px 18px',
+              background: 'transparent',
+              border: '1.5px solid rgba(255,255,255,0.4)',
+              borderRadius: 8, cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, color: '#fff',
+              letterSpacing: '0.04em',
+            }}
+          >
+            VER PRODUCTO
+          </button>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-          <span className="t-price" style={{ fontSize: 17 }}>€{product.price}</span>
-          {product.inStock && (
-            <button
-              onClick={e => { e.stopPropagation(); onAdd() }}
-              style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: '#d4a726', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#060f22',
-              }}
-            >
-              <Plus size={16} strokeWidth={2.5} />
-            </button>
-          )}
-        </div>
+        <img
+          src={product.image}
+          alt={product.name}
+          style={{ width: 88, height: 88, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+        />
       </div>
+
+      <LinkRow label="Ver todas las camisetas" onClick={onViewProduct} />
+      <LinkRow label="Ver próximos partidos" onClick={onViewEntradas} />
+
     </div>
   )
 }
 
-function ProductDetail({ product, inCart, onBack, onAdd }: {
-  product: Product; inCart: boolean; onBack: () => void; onAdd: () => void
+/* ── ENTRADAS tab ────────────────────────────────────────────── */
+function EntradasTab({
+  match,
+  onBuyTickets,
+}: {
+  match: typeof matches[0] | undefined
+  onBuyTickets: () => void
 }) {
-  const [selectedSize, setSelectedSize] = useState('M')
-  const [qty, setQty] = useState(1)
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Image */}
-      <div style={{ position: 'relative', height: 320, flexShrink: 0 }}>
-        <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #060f22 0%, transparent 60%)' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+      <div style={{
+        background: '#0c1b3a', borderRadius: 14,
+        border: '1px solid rgba(255,255,255,0.07)',
+        padding: 16,
+      }}>
+        <p style={{ margin: '0 0 2px', fontSize: 16, fontWeight: 700 }}>Entradas</p>
+        <p style={{ margin: '0 0 14px', fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+          Próximo partido en casa
+        </p>
+
+        {match ? (
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 700 }}>
+                {match.homeTeam} vs {match.awayTeam}
+              </p>
+              <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+                {match.date} · {match.time} h
+              </p>
+            </div>
+            <div style={{
+              width: 44, height: 44,
+              background: 'rgba(255,255,255,0.06)', borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Ticket size={20} style={{ color: 'rgba(255,255,255,0.6)' }} />
+            </div>
+          </div>
+        ) : (
+          <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
+            No hay partidos programados en casa.
+          </p>
+        )}
+
         <button
-          onClick={onBack}
-          className="safe-top"
+          onClick={onBuyTickets}
           style={{
-            position: 'absolute', top: 0, left: 16,
-            width: 36, height: 36, borderRadius: 10,
-            background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)',
-            border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff',
+            width: '100%', padding: '12px 0',
+            background: 'transparent',
+            border: '1.5px solid rgba(255,255,255,0.35)',
+            borderRadius: 8, cursor: 'pointer',
+            fontSize: 13, fontWeight: 700, color: '#fff',
+            letterSpacing: '0.04em',
           }}
         >
-          <X size={18} />
+          COMPRAR ENTRADAS
         </button>
-        {product.badge && (
-          <span className="badge badge-gold" style={{ position: 'absolute', bottom: 20, left: 20 }}>
-            {product.badge}
-          </span>
-        )}
       </div>
 
-      <div className="scroll-area flex-1" style={{ background: '#060f22', padding: '20px 20px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
-          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, letterSpacing: '-0.3px', flex: 1, paddingRight: 16 }}>
-            {product.name}
-          </h2>
-          <span className="t-price" style={{ fontSize: 24, flexShrink: 0 }}>€{product.price}</span>
-        </div>
-        <p style={{ margin: '0 0 24px', fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{product.description}</p>
+      <LinkRow label="Ver próximos partidos" onClick={() => {}} />
 
-        {/* Size selector */}
-        <div style={{ marginBottom: 24 }}>
-          <p style={{ margin: '0 0 10px', fontSize: 14, fontWeight: 600 }}>Size</p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
+    </div>
+  )
+}
+
+/* ── Row link ────────────────────────────────────────────────── */
+function LinkRow({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        width: '100%', padding: '16px',
+        background: '#0c1b3a', borderRadius: 12,
+        border: '1px solid rgba(255,255,255,0.07)',
+        cursor: 'pointer', textAlign: 'left', color: '#fff',
+      }}
+    >
+      <span style={{ fontSize: 14, fontWeight: 500 }}>{label}</span>
+      <ChevronRight size={16} style={{ color: 'rgba(255,255,255,0.3)' }} />
+    </button>
+  )
+}
+
+/* ── Product detail view ─────────────────────────────────────── */
+function ProductView({ product, onBack }: { product: typeof products[0]; onBack: () => void }) {
+  const [size, setSize] = useState<string | null>(null)
+  const [added, setAdded] = useState(false)
+  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+
+  const handleAdd = () => {
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#060f22' }}>
+
+      <div
+        className="safe-top shrink-0"
+        style={{
+          display: 'flex', alignItems: 'center', position: 'relative',
+          padding: '0 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ArrowLeft size={18} />
+        </button>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 16, fontWeight: 700, pointerEvents: 'none' }}>
+          TIENDA
+        </span>
+      </div>
+
+      <div className="scroll-area flex-1">
+        <img
+          src={product.image}
+          alt={product.name}
+          style={{ width: '100%', height: 260, objectFit: 'cover', display: 'block' }}
+        />
+        <div style={{ padding: '20px 16px' }}>
+          <p style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 800 }}>{product.name}</p>
+          <p style={{ margin: '0 0 14px', fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>{product.description}</p>
+          <p style={{ margin: '0 0 20px', fontSize: 24, fontWeight: 900, color: '#d4a726' }}>
+            {product.price.toFixed(2).replace('.', ',')} €
+          </p>
+
+          <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Talla
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
+            {sizes.map(s => (
               <button
                 key={s}
-                onClick={() => setSelectedSize(s)}
+                onClick={() => setSize(s)}
                 style={{
-                  padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  background: selectedSize === s ? '#d4a726' : 'transparent',
-                  color:      selectedSize === s ? '#060f22' : 'rgba(255,255,255,0.6)',
-                  border:     selectedSize === s ? 'none' : '1px solid rgba(255,255,255,0.14)',
-                  transition: 'background 0.12s, color 0.12s',
+                  width: 44, height: 44, borderRadius: 8,
+                  border: size === s ? '2px solid #d4a726' : '1px solid rgba(255,255,255,0.15)',
+                  background: size === s ? 'rgba(212,167,38,0.12)' : '#0c1b3a',
+                  color: size === s ? '#d4a726' : '#fff',
+                  fontWeight: size === s ? 700 : 500, fontSize: 13,
+                  cursor: 'pointer',
                 }}
               >
                 {s}
@@ -258,45 +314,141 @@ function ProductDetail({ product, inCart, onBack, onAdd }: {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Qty */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 600, flex: 1 }}>Quantity</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{
+        padding: '14px 16px',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 24px)',
+        background: '#060f22', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0,
+      }}>
+        <button
+          onClick={handleAdd}
+          className="btn btn-primary"
+          style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, fontWeight: 700 }}
+        >
+          {added ? '¡Añadido al carrito!' : 'Añadir al carrito'}
+        </button>
+      </div>
+
+    </div>
+  )
+}
+
+/* ── Ticket purchase view ────────────────────────────────────── */
+function PurchaseView({ match, onBack }: { match: typeof matches[0] | undefined; onBack: () => void }) {
+  const [qty, setQty] = useState(1)
+  const [done, setDone] = useState(false)
+  const price = 28
+
+  if (done) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', height: '100%', background: '#060f22',
+        alignItems: 'center', justifyContent: 'center', padding: 32,
+      }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: '50%',
+          background: 'rgba(76,175,80,0.15)', border: '2px solid rgba(76,175,80,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
+        }}>
+          <Ticket size={32} style={{ color: '#4caf50' }} />
+        </div>
+        <h2 style={{ margin: '0 0 10px', fontSize: 22, fontWeight: 800, textAlign: 'center' }}>
+          ¡Entradas confirmadas!
+        </h2>
+        <p style={{ margin: '0 0 32px', fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: 1.6 }}>
+          {qty} entrada{qty > 1 ? 's' : ''} para {match?.homeTeam} vs {match?.awayTeam}
+        </p>
+        <button
+          className="btn btn-primary"
+          style={{ padding: '14px 32px', borderRadius: 12, fontSize: 14, fontWeight: 700 }}
+          onClick={onBack}
+        >
+          Volver a Tienda
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#060f22' }}>
+
+      <div
+        className="safe-top shrink-0"
+        style={{
+          display: 'flex', alignItems: 'center', position: 'relative',
+          padding: '0 16px 14px', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ArrowLeft size={18} />
+        </button>
+        <span style={{ position: 'absolute', left: 0, right: 0, textAlign: 'center', fontSize: 16, fontWeight: 700, pointerEvents: 'none' }}>
+          COMPRAR ENTRADAS
+        </span>
+      </div>
+
+      <div className="scroll-area flex-1" style={{ padding: '20px 16px 0' }}>
+
+        {match && (
+          <div style={{ background: '#0c1b3a', borderRadius: 12, border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px', marginBottom: 20 }}>
+            <p style={{ margin: '0 0 3px', fontSize: 16, fontWeight: 700 }}>
+              {match.homeTeam} vs {match.awayTeam}
+            </p>
+            <p style={{ margin: 0, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+              {match.date} · {match.time} h · {match.stadium}
+            </p>
+          </div>
+        )}
+
+        <div style={{ background: '#0c1b3a', borderRadius: 12, border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px', marginBottom: 20 }}>
+          <p style={{ margin: '0 0 14px', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Cantidad
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <button
               onClick={() => setQty(q => Math.max(1, q - 1))}
-              style={{ width: 32, height: 32, borderRadius: 8, background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <Minus size={14} />
+              −
             </button>
-            <span style={{ fontSize: 16, fontWeight: 700, minWidth: 20, textAlign: 'center' }}>{qty}</span>
+            <span style={{ fontSize: 20, fontWeight: 700, minWidth: 24, textAlign: 'center' }}>{qty}</span>
             <button
-              onClick={() => setQty(q => q + 1)}
-              style={{ width: 32, height: 32, borderRadius: 8, background: '#0c1b3a', border: '1px solid rgba(255,255,255,0.12)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={() => setQty(q => Math.min(6, q + 1))}
+              style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <Plus size={14} />
+              +
             </button>
           </div>
         </div>
+
+        <div style={{ background: '#0c1b3a', borderRadius: 12, border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontSize: 14 }}>Entrada general × {qty}</span>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>€{(price * qty).toFixed(2).replace('.', ',')}</span>
+          </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 10, marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>Total</span>
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#d4a726' }}>€{(price * qty).toFixed(2).replace('.', ',')}</span>
+          </div>
+        </div>
+
       </div>
 
-      {/* CTA */}
-      <div style={{ padding: '14px 20px 28px', background: '#060f22', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-        {product.inStock ? (
-          <button
-            onClick={onAdd}
-            disabled={inCart}
-            className="btn btn-primary"
-            style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, opacity: inCart ? 0.6 : 1 }}
-          >
-            {inCart ? <><Check size={16} /> In cart</> : <><ShoppingCart size={16} /> Add to cart — €{(product.price * qty).toFixed(2)}</>}
-          </button>
-        ) : (
-          <button disabled className="btn" style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, background: '#0c1b3a', color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            Out of Stock
-          </button>
-        )}
+      <div style={{
+        padding: '14px 16px',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 24px)',
+        background: '#060f22', borderTop: '1px solid rgba(255,255,255,0.07)', flexShrink: 0,
+      }}>
+        <button
+          onClick={() => setDone(true)}
+          className="btn btn-primary"
+          style={{ width: '100%', padding: '15px 0', borderRadius: 12, fontSize: 15, fontWeight: 700 }}
+        >
+          Confirmar compra · €{(price * qty).toFixed(2).replace('.', ',')}
+        </button>
       </div>
+
     </div>
   )
 }
