@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Ticket, ChevronRight } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { products, matches } from '../data'
@@ -9,9 +9,10 @@ type StoreView = 'main' | 'product' | 'purchase'
 export default function Store() {
   const navigate = useNavigate()
   const location = useLocation()
-  const defaultTab: Tab = location.pathname === '/entradas' ? 'entradas' : 'tienda'
-  const [activeTab, setActiveTab] = useState<Tab>(defaultTab)
+  const activeTab: Tab = location.pathname === '/entradas' ? 'entradas' : 'tienda'
   const [view, setView] = useState<StoreView>('main')
+
+  useEffect(() => { setView('main') }, [location.pathname])
 
   const jersey = products.find(p => p.category === 'jersey') ?? products[0]
   const upcomingMatch = matches.find(m => m.status === 'upcoming')
@@ -70,7 +71,7 @@ export default function Store() {
           {(['tienda', 'entradas'] as Tab[]).map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => navigate(tab === 'tienda' ? '/store' : '/entradas')}
               style={{
                 flex: 1, padding: '9px 0',
                 border: 'none', cursor: 'pointer',
@@ -95,7 +96,7 @@ export default function Store() {
           <TiendaTab
             product={jersey}
             onViewProduct={() => setView('product')}
-            onViewEntradas={() => setActiveTab('entradas')}
+            onViewEntradas={() => navigate('/entradas')}
           />
         ) : (
           <EntradasTab
