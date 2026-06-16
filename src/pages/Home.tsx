@@ -87,7 +87,7 @@ export default function Home() {
         <img
           src={stadiumImg}
           alt="Estadio Heliodoro Rodríguez López"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 75%' }}
         />
         {/* Blend top into background */}
         <div style={{
