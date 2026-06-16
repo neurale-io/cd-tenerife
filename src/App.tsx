@@ -4,7 +4,6 @@ import Home from './pages/Home'
 import Afiliacion from './pages/Afiliacion'
 import News from './pages/News'
 import Store from './pages/Store'
-import Live from './pages/Live'
 import Profile from './pages/Profile'
 
 const NO_NAV_ROUTES = ['/', '/afiliacion']
@@ -22,7 +21,6 @@ function AppShell() {
           <Route path="/news" element={<News />} />
           <Route path="/store" element={<Store />} />
           <Route path="/entradas" element={<Store />} />
-          <Route path="/live" element={<Live />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, Check, CreditCard } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import cdtLogo from '../assets/cdt-logo.jpeg'
+import cdtLogo from '../assets/cdt-logo.png'
 import { membershipPlans } from '../data'
 
 type View = 'main' | 'checkout'
