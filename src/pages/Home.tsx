@@ -13,63 +13,50 @@ export default function Home() {
   const navigate = useNavigate()
 
   return (
-    <div style={{ position: 'relative', height: '100%', background: '#060f22', overflow: 'hidden' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#060f22' }}>
 
-      {/* ── Full-bleed stadium background ── */}
-      <img
-        src={stadiumImg}
-        alt=""
-        aria-hidden
-        style={{
+      {/* ── Stadium section: natural proportions, full width, no crop ── */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <img
+          src={stadiumImg}
+          alt="Estadio Heliodoro Rodríguez López"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
+        />
+
+        {/* Mask text residue at very top, then transparent, then fade to dark at bottom */}
+        <div style={{
           position: 'absolute',
           inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center center',
-        }}
-      />
+          background: `linear-gradient(to bottom,
+            rgba(6,15,34,0.80) 0%,
+            rgba(6,15,34,0.10) 13%,
+            transparent 22%,
+            transparent 58%,
+            rgba(6,15,34,0.60) 74%,
+            #060f22 90%
+          )`,
+        }} />
 
-      {/* ── Gradient: transparent at top, dark only at the bottom for card contrast ── */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: `linear-gradient(to bottom,
-          transparent 0%,
-          transparent 48%,
-          rgba(6,15,34,0.55) 62%,
-          rgba(6,15,34,0.88) 73%,
-          rgba(6,15,34,0.97) 82%,
-          #060f22 91%
-        )`,
-      }} />
-
-      {/* ── Content layer ── */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* Logo + title over the sky */}
+        {/* Logo + title floating over the sky */}
         <div
           className="fade-up"
           style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            paddingTop: 'calc(env(safe-area-inset-top, 20px) + 32px)',
+            paddingTop: 'calc(env(safe-area-inset-top, 20px) + 24px)',
           }}
         >
           <img
             src={cdtLogo}
             alt="CD Tenerife"
             style={{
-              width: 128,
-              height: 128,
+              width: 120,
+              height: 120,
               objectFit: 'contain',
               marginBottom: 12,
               filter: 'drop-shadow(0 6px 24px rgba(0,0,0,0.6))',
@@ -97,68 +84,67 @@ export default function Home() {
             LA PASIÓN QUE NOS UNE
           </p>
         </div>
-
-        {/* Spacer — stadium shows through here */}
-        <div style={{ flex: 1 }} />
-
-        {/* Menu cards pinned to bottom */}
-        <div
-          className="stagger"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-            padding: `0 18px calc(env(safe-area-inset-bottom, 0px) + 28px)`,
-          }}
-        >
-          {menuItems.map(({ icon: Icon, number, title, subtitle, path }) => (
-            <button
-              key={path}
-              onClick={() => navigate(path)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 18,
-                padding: '17px 20px',
-                background: 'rgba(8, 18, 50, 0.88)',
-                backdropFilter: 'blur(12px)',
-                borderRadius: 16,
-                border: '1px solid rgba(255,255,255,0.10)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                color: '#fff',
-                transition: 'transform 0.12s',
-              }}
-              onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.975)')}
-              onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-              onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              <div style={{
-                width: 46,
-                height: 46,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(255,255,255,0.09)',
-                borderRadius: 12,
-                flexShrink: 0,
-              }}>
-                <Icon size={22} strokeWidth={1.6} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }}>
-                  <span style={{ color: '#d4a726', marginRight: 8, fontWeight: 700 }}>{number}</span>
-                  {title}
-                </div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
-                  {subtitle}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-
       </div>
+
+      {/* ── Menu cards directly below the image ── */}
+      <div
+        className="stagger"
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 12,
+          padding: `12px 18px calc(env(safe-area-inset-bottom, 0px) + 20px)`,
+        }}
+      >
+        {menuItems.map(({ icon: Icon, number, title, subtitle, path }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 18,
+              padding: '17px 20px',
+              background: 'rgba(8, 18, 50, 0.90)',
+              backdropFilter: 'blur(12px)',
+              borderRadius: 16,
+              border: '1px solid rgba(255,255,255,0.10)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              color: '#fff',
+              transition: 'transform 0.12s',
+            }}
+            onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.975)')}
+            onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+            onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+          >
+            <div style={{
+              width: 46,
+              height: 46,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(255,255,255,0.09)',
+              borderRadius: 12,
+              flexShrink: 0,
+            }}>
+              <Icon size={22} strokeWidth={1.6} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }}>
+                <span style={{ color: '#d4a726', marginRight: 8, fontWeight: 700 }}>{number}</span>
+                {title}
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
+                {subtitle}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+
     </div>
   )
 }
