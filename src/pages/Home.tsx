@@ -26,7 +26,7 @@ export default function Home() {
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          objectPosition: 'center 30%',
+          objectPosition: 'center top',
         }}
       />
 
@@ -36,12 +36,12 @@ export default function Home() {
         inset: 0,
         background: [
           'linear-gradient(to bottom,',
-          '  rgba(6,15,34,0.55) 0%,',
-          '  rgba(6,15,34,0.05) 28%,',
-          '  rgba(6,15,34,0.05) 52%,',
-          '  rgba(6,15,34,0.72) 68%,',
-          '  rgba(6,15,34,0.97) 82%,',
-          '  #060f22 100%',
+          '  rgba(6,15,34,0.88) 0%,',
+          '  rgba(6,15,34,0.20) 18%,',
+          '  rgba(6,15,34,0.05) 42%,',
+          '  rgba(6,15,34,0.60) 64%,',
+          '  rgba(6,15,34,0.95) 78%,',
+          '  #060f22 92%',
           ')',
         ].join(''),
       }} />
