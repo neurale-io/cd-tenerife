@@ -1,17 +1,22 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, Newspaper, ShoppingBag, PlayCircle, User } from 'lucide-react'
+import { Home, Newspaper, ShoppingCart, Ticket, User } from 'lucide-react'
 
 const tabs = [
-  { label: 'Home',    icon: Home,        path: '/' },
-  { label: 'News',    icon: Newspaper,   path: '/news' },
-  { label: 'Live',    icon: PlayCircle,  path: '/live' },
-  { label: 'Store',   icon: ShoppingBag, path: '/store' },
-  { label: 'Profile', icon: User,        path: '/profile' },
+  { label: 'Inicio',    icon: Home,         path: '/' },
+  { label: 'Noticias',  icon: Newspaper,    path: '/news' },
+  { label: 'Tienda',    icon: ShoppingCart, path: '/store' },
+  { label: 'Entradas',  icon: Ticket,       path: '/entradas' },
+  { label: 'Perfil',    icon: User,         path: '/profile' },
 ]
 
 export default function BottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
+
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/'
+    return location.pathname === path
+  }
 
   return (
     <nav
@@ -23,9 +28,7 @@ export default function BottomNav() {
     >
       <div style={{ display: 'flex', paddingTop: 4 }}>
         {tabs.map(({ label, icon: Icon, path }) => {
-          const active = path === '/'
-            ? location.pathname === '/'
-            : location.pathname.startsWith(path)
+          const active = isActive(path)
           return (
             <button
               key={path}
