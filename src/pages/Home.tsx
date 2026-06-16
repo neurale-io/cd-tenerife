@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { User, Newspaper, ShoppingCart } from 'lucide-react'
 import cdtLogo from '../assets/cdt-logo.png'
-
-const STADIUM_URL = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&q=80'
+import stadiumImg from '../assets/stadium.jpeg'
 
 const menuItems = [
   {
@@ -86,7 +85,7 @@ export default function Home() {
       {/* ── Stadium image ── */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden' }}>
         <img
-          src={STADIUM_URL}
+          src={stadiumImg}
           alt="Estadio Heliodoro Rodríguez López"
           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%' }}
         />
