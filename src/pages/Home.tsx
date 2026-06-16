@@ -4,159 +4,165 @@ import cdtLogo from '../assets/cdt-logo.png'
 import stadiumImg from '../assets/stadium.jpeg'
 
 const menuItems = [
-  {
-    icon: User,
-    number: 1,
-    title: 'AFILIACIÓN',
-    subtitle: '5€ / mes',
-    path: '/afiliacion',
-  },
-  {
-    icon: Newspaper,
-    number: 2,
-    title: 'NOTICIAS',
-    subtitle: 'Del equipo',
-    path: '/news',
-  },
-  {
-    icon: ShoppingCart,
-    number: 3,
-    title: 'TIENDA & ENTRADAS',
-    subtitle: 'Camisetas y entradas',
-    path: '/store',
-  },
+  { icon: User,         number: 1, title: 'AFILIACIÓN',     subtitle: '5€ / mes',          path: '/afiliacion' },
+  { icon: Newspaper,    number: 2, title: 'NOTICIAS',        subtitle: 'Del equipo',         path: '/news' },
+  { icon: ShoppingCart, number: 3, title: 'TIENDA & ENTRADAS', subtitle: 'Camisetas y entradas', path: '/store' },
 ]
 
 export default function Home() {
   const navigate = useNavigate()
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      background: 'linear-gradient(175deg, #0e2265 0%, #071535 100%)',
-      overflow: 'hidden',
-    }}>
+    <div style={{ position: 'relative', height: '100%', overflow: 'hidden', background: '#060f22' }}>
 
-      {/* ── Logo + title ── */}
-      <div
-        className="safe-top fade-up"
+      {/* ── Full-page stadium background ── */}
+      <img
+        src={stadiumImg}
+        alt=""
+        aria-hidden
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: '28px 20px 16px',
-        }}
-      >
-        <img
-          src={cdtLogo}
-          alt="CD Tenerife"
-          style={{
-            width: 120,
-            height: 120,
-            objectFit: 'contain',
-            marginBottom: 16,
-            filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))',
-          }}
-        />
-        <h1 style={{
-          margin: 0,
-          fontSize: 30,
-          fontWeight: 900,
-          color: '#fff',
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-        }}>
-          CD TENERIFE
-        </h1>
-        <p style={{
-          margin: '6px 0 0',
-          fontSize: 12,
-          fontWeight: 600,
-          color: '#d4a726',
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-        }}>
-          LA PASIÓN QUE NOS UNE
-        </p>
-      </div>
-
-      {/* ── Stadium image ── */}
-      <div style={{ flex: 1, position: 'relative', minHeight: 0, overflow: 'hidden' }}>
-        <img
-          src={stadiumImg}
-          alt="Estadio Heliodoro Rodríguez López"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 75%' }}
-        />
-        {/* Blend top into background */}
-        <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to bottom, #0e2265 0%, transparent 28%, transparent 65%, #071535 100%)',
-        }} />
-      </div>
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center 30%',
+        }}
+      />
 
-      {/* ── Menu items ── */}
+      {/* ── Gradient overlay ── */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: [
+          'linear-gradient(to bottom,',
+          '  rgba(6,15,34,0.55) 0%,',
+          '  rgba(6,15,34,0.05) 28%,',
+          '  rgba(6,15,34,0.05) 52%,',
+          '  rgba(6,15,34,0.72) 68%,',
+          '  rgba(6,15,34,0.97) 82%,',
+          '  #060f22 100%',
+          ')',
+        ].join(''),
+      }} />
+
+      {/* ── Content layer ── */}
       <div
-        className="safe-bottom stagger"
+        className="safe-top safe-bottom"
         style={{
-          padding: '12px 20px 20px',
+          position: 'relative',
+          zIndex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
+          height: '100%',
         }}
       >
-        {menuItems.map(({ icon: Icon, number, title, subtitle, path }) => (
-          <button
-            key={path}
-            onClick={() => navigate(path)}
+        {/* Logo + title – sits over the sky portion */}
+        <div
+          className="fade-up"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            paddingTop: 36,
+          }}
+        >
+          <img
+            src={cdtLogo}
+            alt="CD Tenerife"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 18,
-              padding: '16px 20px',
-              background: 'rgba(14, 40, 100, 0.82)',
-              backdropFilter: 'blur(6px)',
-              borderRadius: 14,
-              border: '1px solid rgba(255,255,255,0.08)',
-              cursor: 'pointer',
-              textAlign: 'left',
-              color: '#fff',
-              transition: 'background 0.15s, transform 0.12s',
+              width: 130,
+              height: 130,
+              objectFit: 'contain',
+              marginBottom: 14,
+              filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.6))',
             }}
-            onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.98)')}
-            onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-          >
-            {/* Icon */}
-            <div style={{
-              width: 44,
-              height: 44,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(255,255,255,0.07)',
-              borderRadius: 10,
-              flexShrink: 0,
-            }}>
-              <Icon size={24} strokeWidth={1.6} />
-            </div>
+          />
+          <h1 style={{
+            margin: 0,
+            fontSize: 32,
+            fontWeight: 900,
+            color: '#fff',
+            letterSpacing: '0.06em',
+            textShadow: '0 2px 12px rgba(0,0,0,0.5)',
+          }}>
+            CD TENERIFE
+          </h1>
+          <p style={{
+            margin: '6px 0 0',
+            fontSize: 12,
+            fontWeight: 700,
+            color: '#d4a726',
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+          }}>
+            LA PASIÓN QUE NOS UNE
+          </p>
+        </div>
 
-            {/* Text */}
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.05em' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)', marginRight: 8, fontWeight: 600 }}>
-                  {number}
-                </span>
-                {title}
+        {/* Spacer – lets stadium show through */}
+        <div style={{ flex: 1 }} />
+
+        {/* Menu cards */}
+        <div
+          className="stagger"
+          style={{
+            padding: '0 18px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+          }}
+        >
+          {menuItems.map(({ icon: Icon, number, title, subtitle, path }) => (
+            <button
+              key={path}
+              onClick={() => navigate(path)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 18,
+                padding: '18px 20px',
+                background: 'rgba(10, 22, 58, 0.88)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 16,
+                border: '1px solid rgba(255,255,255,0.10)',
+                cursor: 'pointer',
+                textAlign: 'left',
+                color: '#fff',
+                transition: 'transform 0.12s',
+              }}
+              onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.975)')}
+              onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+              onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+            >
+              <div style={{
+                width: 46,
+                height: 46,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(255,255,255,0.09)',
+                borderRadius: 12,
+                flexShrink: 0,
+              }}>
+                <Icon size={22} strokeWidth={1.6} />
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', marginTop: 3 }}>
-                {subtitle}
+
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }}>
+                  <span style={{ color: '#d4a726', marginRight: 8, fontWeight: 700 }}>
+                    {number}
+                  </span>
+                  {title}
+                </div>
+                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
+                  {subtitle}
+                </div>
               </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
 
     </div>
