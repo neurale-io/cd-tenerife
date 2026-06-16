@@ -4,83 +4,65 @@ import cdtLogo from '../assets/cdt-logo.png'
 import stadiumImg from '../assets/stadium.jpeg'
 
 const menuItems = [
-  { icon: User,         number: 1, title: 'AFILIACIÓN',     subtitle: '5€ / mes',          path: '/afiliacion' },
-  { icon: Newspaper,    number: 2, title: 'NOTICIAS',        subtitle: 'Del equipo',         path: '/news' },
-  { icon: ShoppingCart, number: 3, title: 'TIENDA & ENTRADAS', subtitle: 'Camisetas y entradas', path: '/store' },
+  { icon: User,         number: 1, title: 'AFILIACIÓN',       subtitle: '5€ / mes',             path: '/afiliacion' },
+  { icon: Newspaper,    number: 2, title: 'NOTICIAS',          subtitle: 'Del equipo',            path: '/news' },
+  { icon: ShoppingCart, number: 3, title: 'TIENDA & ENTRADAS', subtitle: 'Camisetas y entradas',  path: '/store' },
 ]
 
 export default function Home() {
   const navigate = useNavigate()
 
   return (
-    <div style={{ position: 'relative', height: '100%', overflow: 'hidden', background: '#060f22' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#060f22' }}>
 
-      {/* ── Full-page stadium background ── */}
-      <img
-        src={stadiumImg}
-        alt=""
-        aria-hidden
-        style={{
+      {/* ── Stadium section – contains the full image ── */}
+      <div style={{ flex: '0 0 57%', position: 'relative', overflow: 'hidden' }}>
+        <img
+          src={stadiumImg}
+          alt="Estadio Heliodoro Rodríguez López"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center center',
+          }}
+        />
+
+        {/* Subtle top dark vignette + hard fade to background at bottom */}
+        <div style={{
           position: 'absolute',
           inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          objectPosition: 'center top',
-        }}
-      />
+          background: 'linear-gradient(to bottom, rgba(6,15,34,0.28) 0%, transparent 22%, transparent 62%, #060f22 100%)',
+        }} />
 
-      {/* ── Gradient overlay ── */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: [
-          'linear-gradient(to bottom,',
-          '  rgba(6,15,34,0.30) 0%,',
-          '  rgba(6,15,34,0.05) 30%,',
-          '  rgba(6,15,34,0.05) 52%,',
-          '  rgba(6,15,34,0.65) 66%,',
-          '  rgba(6,15,34,0.95) 80%,',
-          '  #060f22 93%',
-          ')',
-        ].join(''),
-      }} />
-
-      {/* ── Content layer ── */}
-      <div
-        className="safe-top safe-bottom"
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-        }}
-      >
-        {/* Logo + title – sits over the sky portion */}
+        {/* Logo + title float over the sky portion */}
         <div
-          className="fade-up"
+          className="safe-top fade-up"
           style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            paddingTop: 36,
+            paddingTop: 32,
           }}
         >
           <img
             src={cdtLogo}
             alt="CD Tenerife"
             style={{
-              width: 130,
-              height: 130,
+              width: 120,
+              height: 120,
               objectFit: 'contain',
-              marginBottom: 14,
-              filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.6))',
+              marginBottom: 12,
+              filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.55))',
             }}
           />
           <h1 style={{
             margin: 0,
-            fontSize: 32,
+            fontSize: 30,
             fontWeight: 900,
             color: '#fff',
             letterSpacing: '0.06em',
@@ -89,7 +71,7 @@ export default function Home() {
             CD TENERIFE
           </h1>
           <p style={{
-            margin: '6px 0 0',
+            margin: '5px 0 0',
             fontSize: 12,
             fontWeight: 700,
             color: '#d4a726',
@@ -100,69 +82,66 @@ export default function Home() {
             LA PASIÓN QUE NOS UNE
           </p>
         </div>
+      </div>
 
-        {/* Spacer – lets stadium show through */}
-        <div style={{ flex: 1 }} />
+      {/* ── Menu cards ── */}
+      <div
+        className="safe-bottom stagger"
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 12,
+          padding: '8px 18px 20px',
+        }}
+      >
+        {menuItems.map(({ icon: Icon, number, title, subtitle, path }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 18,
+              padding: '17px 20px',
+              background: 'rgba(10, 22, 58, 0.90)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 16,
+              border: '1px solid rgba(255,255,255,0.10)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              color: '#fff',
+              transition: 'transform 0.12s',
+            }}
+            onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.975)')}
+            onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+            onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+          >
+            <div style={{
+              width: 46,
+              height: 46,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(255,255,255,0.09)',
+              borderRadius: 12,
+              flexShrink: 0,
+            }}>
+              <Icon size={22} strokeWidth={1.6} />
+            </div>
 
-        {/* Menu cards */}
-        <div
-          className="stagger"
-          style={{
-            padding: '0 18px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-          }}
-        >
-          {menuItems.map(({ icon: Icon, number, title, subtitle, path }) => (
-            <button
-              key={path}
-              onClick={() => navigate(path)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 18,
-                padding: '18px 20px',
-                background: 'rgba(10, 22, 58, 0.88)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: 16,
-                border: '1px solid rgba(255,255,255,0.10)',
-                cursor: 'pointer',
-                textAlign: 'left',
-                color: '#fff',
-                transition: 'transform 0.12s',
-              }}
-              onPointerDown={e => (e.currentTarget.style.transform = 'scale(0.975)')}
-              onPointerUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-              onPointerLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              <div style={{
-                width: 46,
-                height: 46,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(255,255,255,0.09)',
-                borderRadius: 12,
-                flexShrink: 0,
-              }}>
-                <Icon size={22} strokeWidth={1.6} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }}>
+                <span style={{ color: '#d4a726', marginRight: 8, fontWeight: 700 }}>{number}</span>
+                {title}
               </div>
-
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }}>
-                  <span style={{ color: '#d4a726', marginRight: 8, fontWeight: 700 }}>
-                    {number}
-                  </span>
-                  {title}
-                </div>
-                <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
-                  {subtitle}
-                </div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
+                {subtitle}
               </div>
-            </button>
-          ))}
-        </div>
+            </div>
+          </button>
+        ))}
       </div>
 
     </div>
