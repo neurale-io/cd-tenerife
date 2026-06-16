@@ -15,16 +15,15 @@ export default function Home() {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#060f22' }}>
 
-      {/* ── Stadium section – contains the full image ── */}
-      <div style={{ flex: '0 0 57%', position: 'relative', overflow: 'hidden' }}>
+      {/* ── Stadium section – full image, no cropping ── */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
         <img
           src={stadiumImg}
           alt="Estadio Heliodoro Rodríguez López"
           style={{
             width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center center',
+            height: 'auto',
+            display: 'block',
           }}
         />
 
