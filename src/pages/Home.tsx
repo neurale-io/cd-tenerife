@@ -36,7 +36,7 @@ export default function Home() {
 
         {/* Logo + title float over the sky portion */}
         <div
-          className="safe-top fade-up"
+          className="fade-up"
           style={{
             position: 'absolute',
             top: 0,
@@ -45,7 +45,7 @@ export default function Home() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            paddingTop: 32,
+            paddingTop: 'calc(env(safe-area-inset-top, 20px) + 68px)',
           }}
         >
           <img
@@ -90,9 +90,9 @@ export default function Home() {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
+          justifyContent: 'flex-end',
           gap: 12,
-          padding: '8px 18px 20px',
+          padding: '8px 18px calc(env(safe-area-inset-bottom, 0px) + 24px)',
         }}
       >
         {menuItems.map(({ icon: Icon, number, title, subtitle, path }) => (
